@@ -4,7 +4,7 @@ import { expect } from "chai";
 import { parseEther } from "ethers";
 import { ethers } from "hardhat";
 
-import { ImmutableRatings, ImmutableRatings__factory, TDN, TUP } from "../types";
+import { ImmutableRatings, ImmutableRatings__factory, TDN, TUP } from "../../types";
 
 interface MarketRatingStruct {
   url: string;

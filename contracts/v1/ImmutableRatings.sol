@@ -5,8 +5,8 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Ownable, Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
-import {TUP} from "./TUP.sol";
-import {TDN} from "./TDN.sol";
+import {TUP} from "../TUP.sol";
+import {TDN} from "../TDN.sol";
 
 /**
  * @title Immutable Ratings

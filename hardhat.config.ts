@@ -5,6 +5,7 @@ import "hardhat-deploy";
 import "hardhat-gas-reporter";
 import type { HardhatUserConfig } from "hardhat/config";
 import { vars } from "hardhat/config";
+import "solidity-docgen";
 
 import "./tasks/accounts";
 import "./tasks/configure";
@@ -94,6 +95,10 @@ const config: HardhatUserConfig = {
   typechain: {
     outDir: "types",
     target: "ethers-v6",
+  },
+  docgen: {
+    pages: "files",
+    exclude: ["v1"],
   },
 };
 
