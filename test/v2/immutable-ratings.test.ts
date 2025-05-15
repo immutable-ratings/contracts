@@ -5,9 +5,9 @@ import {
   setBalance,
   stopImpersonatingAccount,
 } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { SWAP_ROUTER_02_ADDRESSES, V2_ROUTER_ADDRESSES } from "@uniswap/sdk-core";
+import { SWAP_ROUTER_02_ADDRESSES, WETH9 } from "@uniswap/sdk-core";
 import { expect } from "chai";
-import { AbiCoder, MaxInt256, parseEther, solidityPacked } from "ethers";
+import { AbiCoder, MaxInt256, ZeroAddress, parseEther, solidityPacked } from "ethers";
 import { providers } from "ethers5";
 import { ethers } from "hardhat";
 
@@ -25,6 +25,7 @@ import { Token, parseDegen, parseUsdc, tokens } from "./tokens.test";
 
 const price = parseUsdc("0.0001"); // $0.0001 USDC
 const swapRouter = SWAP_ROUTER_02_ADDRESSES(8453);
+const weth = WETH9[8453].address;
 
 describe("Immutable Ratings", () => {
   let deployer: SignerWithAddress;
@@ -339,7 +340,7 @@ describe("Immutable Ratings", () => {
     });
   });
 
-  describe.only("swaps", () => {
+  describe("swaps", () => {
     const url = "https://www.example.com";
     const amount = parseEther("1000");
     let _address: string;
@@ -369,6 +370,25 @@ describe("Immutable Ratings", () => {
         await usdc.transfer(receiver.address, await usdc.balanceOf(deployer.address));
         await expect(immutableRatings.createUpRatingSwap(url, amount, swapParams)).to.be.revertedWith("STF");
       });
+
+      it.only("should swap a native token", async () => {
+        const swapParams: ImmutableRatings.SwapParamsMultihopStruct = {
+          token: ZeroAddress,
+          path: solidityPacked(["address", "uint24", "address"], [tokens.usdc.address, 500, weth]),
+          amountInMaximum: parseEther("1.0"),
+        };
+
+        const balanceBefore = await ethers.provider.getBalance(deployer.address);
+        await expect(
+          immutableRatings.createUpRatingSwap(url, amount, swapParams, { value: parseEther("1.0") }),
+        ).changeTokenBalances(usdc, [receiver.address], [parseUsdc("0.1")]);
+        const balanceAfter = await ethers.provider.getBalance(deployer.address);
+        console.log({
+          b: balanceBefore,
+          a: balanceAfter,
+          d: balanceAfter - balanceBefore,
+        });
+      });
     });
 
     describe("createDownRatingSwap", () => {
@@ -391,6 +411,255 @@ describe("Immutable Ratings", () => {
       it("should revert if insufficient payment", async () => {
         await usdc.transfer(receiver.address, await usdc.balanceOf(deployer.address));
         await expect(immutableRatings.createDownRatingSwap(url, amount, swapParams)).to.be.revertedWith("STF");
+      });
+    });
+
+    describe("Set Receiver", () => {
+      it("should set the receiver", async () => {
+        await immutableRatings.setReceiver(receiver.address);
+        expect(await immutableRatings.receiver()).to.equal(receiver.address);
+      });
+
+      it("should revert if not the owner", async () => {
+        await expect(immutableRatings.connect(receiver).setReceiver(receiver.address)).to.be.revertedWithCustomError(
+          immutableRatings,
+          "OwnableUnauthorizedAccount",
+        );
+      });
+
+      it("should emit ReceiverUpdated event", async () => {
+        await expect(immutableRatings.setReceiver(receiver.address))
+          .to.emit(immutableRatings, "ReceiverUpdated")
+          .withArgs(receiver.address);
+      });
+    });
+
+    describe("Get User Ratings", () => {
+      it("should get the user ratings", async () => {
+        expect(await immutableRatings.getUserRatings(deployer.address)).to.equal(0);
+        await usdc.approve(immutableRatings.target, MaxInt256);
+        await immutableRatings.createUpRating("https://www.example.com", parseEther("1000"));
+        expect(await immutableRatings.getUserRatings(deployer.address)).to.equal(parseEther("1000"));
+      });
+    });
+
+    describe("Set Paused", () => {
+      it("should set the paused state to true", async () => {
+        await immutableRatings.setIsPaused(true);
+        expect(await immutableRatings.isPaused()).to.equal(true);
+      });
+
+      it("should set the paused state to false", async () => {
+        await immutableRatings.setIsPaused(false);
+        expect(await immutableRatings.isPaused()).to.equal(false);
+      });
+
+      it("should revert if not the owner", async () => {
+        await expect(immutableRatings.connect(receiver).setIsPaused(true)).to.be.revertedWithCustomError(
+          immutableRatings,
+          "OwnableUnauthorizedAccount",
+        );
+      });
+
+      it("should emit Paused event", async () => {
+        await expect(immutableRatings.setIsPaused(true)).to.emit(immutableRatings, "Paused").withArgs(true);
+        await expect(immutableRatings.setIsPaused(false)).to.emit(immutableRatings, "Paused").withArgs(false);
+      });
+    });
+
+    describe("Transfer Ownership", () => {
+      it("should transfer ownership", async () => {
+        expect(await immutableRatings.owner()).to.equal(deployer.address);
+        await immutableRatings.transferOwnership(receiver.address);
+        expect(await immutableRatings.pendingOwner()).to.equal(receiver.address);
+        await immutableRatings.connect(receiver).acceptOwnership();
+        expect(await immutableRatings.owner()).to.equal(receiver.address);
+      });
+    });
+
+    describe("Recover ERC20", () => {
+      it("should recover ERC20 tokens", async () => {
+        await tup.grantRole(await tup.MINTER_ROLE(), deployer.address);
+
+        await tup.mint(deployer.address, immutableRatings.target, parseEther("1000"));
+
+        expect(await tup.balanceOf(immutableRatings.target)).to.equal(parseEther("1000"));
+
+        await immutableRatings.recoverERC20(tup.target, deployer.address);
+
+        expect(await tup.balanceOf(deployer.address)).to.equal(parseEther("1000"));
+        expect(await tup.balanceOf(immutableRatings.target)).to.equal(0);
+      });
+
+      it("should revert if the token address is the zero address", async () => {
+        await expect(immutableRatings.recoverERC20(ethers.ZeroAddress, deployer.address)).to.be.revertedWithCustomError(
+          immutableRatings,
+          "ZeroAddress",
+        );
+      });
+
+      it("should revert if the recipient is the zero address", async () => {
+        await expect(immutableRatings.recoverERC20(tup.target, ethers.ZeroAddress)).to.be.revertedWithCustomError(
+          immutableRatings,
+          "ZeroAddress",
+        );
+      });
+
+      it("should revert if not the owner", async () => {
+        await expect(
+          immutableRatings.connect(receiver).recoverERC20(tup.target, deployer.address),
+        ).to.be.revertedWithCustomError(immutableRatings, "OwnableUnauthorizedAccount");
+      });
+    });
+
+    describe("Set Payment Token", () => {
+      it("should set the payment token", async () => {
+        expect(await immutableRatings.paymentToken()).to.equal(usdc.target);
+        await immutableRatings.setPaymentToken(degen.target);
+        expect(await immutableRatings.paymentToken()).to.equal(degen.target);
+      });
+
+      it("should revert if not the owner", async () => {
+        await expect(immutableRatings.connect(receiver).setPaymentToken(usdc.target)).to.be.revertedWithCustomError(
+          immutableRatings,
+          "OwnableUnauthorizedAccount",
+        );
+      });
+
+      it("should emit PaymentTokenUpdated event", async () => {
+        await expect(immutableRatings.setPaymentToken(degen.target))
+          .to.emit(immutableRatings, "PaymentTokenUpdated")
+          .withArgs(degen.target);
+      });
+    });
+
+    describe("Set Rating Price", () => {
+      it("should set the rating price", async () => {
+        expect(await immutableRatings.ratingPrice()).to.equal(price);
+        await immutableRatings.setRatingPrice(parseUsdc("0.00007"));
+        expect(await immutableRatings.ratingPrice()).to.equal(parseUsdc("0.00007"));
+      });
+
+      it("should revert if not the owner", async () => {
+        await expect(
+          immutableRatings.connect(receiver).setRatingPrice(parseUsdc("0.00007")),
+        ).to.be.revertedWithCustomError(immutableRatings, "OwnableUnauthorizedAccount");
+      });
+
+      it("should emit RatingPriceUpdated event", async () => {
+        await expect(immutableRatings.setRatingPrice(parseUsdc("0.2")))
+          .to.emit(immutableRatings, "RatingPriceUpdated")
+          .withArgs(parseUsdc("0.2"));
+      });
+    });
+  });
+
+  describe("Native Payment Token", () => {
+    const nativePrice = parseEther("0.00001");
+    let nativeImmutableRatings: ImmutableRatings;
+
+    const url = "https://www.example.com";
+    let _address: string;
+    const amount = parseEther("1000");
+    const value = parseEther("0.01");
+
+    beforeEach(async () => {
+      nativeImmutableRatings = await immutableRatingsFactory.deploy(
+        tup.target,
+        tdn.target,
+        mapping.target,
+        receiver.address,
+        swapRouter,
+        ethers.ZeroAddress,
+        nativePrice,
+      );
+      await nativeImmutableRatings.waitForDeployment();
+
+      await tup.grantRole(await tup.MINTER_ROLE(), nativeImmutableRatings.target);
+      await tdn.grantRole(await tdn.MINTER_ROLE(), nativeImmutableRatings.target);
+
+      _address = await mapping.previewAddress(url);
+    });
+
+    describe("createUpRating", () => {
+      it("should create an up rating", async () => {
+        await nativeImmutableRatings.createUpRating(url, amount, { value });
+        expect(await tup.balanceOf(_address)).to.equal(amount);
+      });
+
+      it("should revert if the value is less than the payment", async () => {
+        await expect(
+          nativeImmutableRatings.createUpRating(url, amount, { value: parseEther("0.00009") }),
+        ).to.be.revertedWithCustomError(nativeImmutableRatings, "InvalidPayment");
+      });
+
+      it("should revert if the value is greater than the payment", async () => {
+        await expect(
+          nativeImmutableRatings.createUpRating(url, amount, { value: parseEther("0.11") }),
+        ).to.be.revertedWithCustomError(nativeImmutableRatings, "InvalidPayment");
+      });
+    });
+
+    describe("createDownRating", () => {
+      it("should create a down rating", async () => {
+        await nativeImmutableRatings.createDownRating(url, amount, { value });
+        expect(await tdn.balanceOf(_address)).to.equal(amount);
+      });
+
+      it("should revert if the value is less than the payment", async () => {
+        await expect(
+          nativeImmutableRatings.createDownRating(url, amount, { value: parseEther("0.00009") }),
+        ).to.be.revertedWithCustomError(nativeImmutableRatings, "InvalidPayment");
+      });
+
+      it("should revert if the value is greater than the payment", async () => {
+        await expect(
+          nativeImmutableRatings.createDownRating(url, amount, { value: parseEther("0.11") }),
+        ).to.be.revertedWithCustomError(nativeImmutableRatings, "InvalidPayment");
+      });
+    });
+
+    describe("createUpRatingSwap", () => {
+      const swapParams: ImmutableRatings.SwapParamsMultihopStruct = {
+        token: tokens.usdc.address,
+        path: solidityPacked(["address", "uint24", "address"], [weth, 500, tokens.usdc.address]),
+        amountInMaximum: parseUsdc("1000"),
+      };
+
+      it("should create an up rating", async () => {
+        expect(await tup.balanceOf(_address)).to.equal(0);
+        await usdc.approve(nativeImmutableRatings.target, MaxInt256);
+        await expect(nativeImmutableRatings.createUpRatingSwap(url, amount, swapParams)).changeEtherBalance(
+          receiver.address,
+          value,
+        );
+      });
+
+      it("should revert if insufficient payment", async () => {
+        await usdc.transfer(receiver.address, await usdc.balanceOf(deployer.address));
+        await expect(nativeImmutableRatings.createUpRatingSwap(url, amount, swapParams)).to.be.revertedWith("STF");
+      });
+    });
+
+    describe("createDownRatingSwap", () => {
+      const swapParams: ImmutableRatings.SwapParamsMultihopStruct = {
+        token: tokens.usdc.address,
+        path: solidityPacked(["address", "uint24", "address"], [weth, 500, tokens.usdc.address]),
+        amountInMaximum: parseUsdc("1000"),
+      };
+
+      it("should create a down rating", async () => {
+        expect(await tdn.balanceOf(_address)).to.equal(0);
+        await usdc.approve(nativeImmutableRatings.target, MaxInt256);
+        await expect(nativeImmutableRatings.createDownRatingSwap(url, amount, swapParams)).changeEtherBalance(
+          receiver.address,
+          value,
+        );
+      });
+
+      it("should revert if insufficient payment", async () => {
+        await usdc.transfer(receiver.address, await usdc.balanceOf(deployer.address));
+        await expect(nativeImmutableRatings.createDownRatingSwap(url, amount, swapParams)).to.be.revertedWith("STF");
       });
     });
   });

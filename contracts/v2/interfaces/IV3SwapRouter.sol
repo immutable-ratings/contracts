@@ -1,6 +1,10 @@
-import "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol";
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.22;
 
-interface IV3SwapRouter is IUniswapV3SwapCallback {
+import "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol";
+import "@uniswap/v3-periphery/contracts/interfaces/IPeripheryPayments.sol";
+
+interface IV3SwapRouter is IUniswapV3SwapCallback, IPeripheryPayments {
     struct ExactInputSingleParams {
         address tokenIn;
         address tokenOut;
@@ -60,4 +64,7 @@ interface IV3SwapRouter is IUniswapV3SwapCallback {
     /// @param params The parameters necessary for the multi-hop swap, encoded as `ExactOutputParams` in calldata
     /// @return amountIn The amount of the input token
     function exactOutput(ExactOutputParams calldata params) external payable returns (uint256 amountIn);
+
+    /// @notice Returns the address of the WETH9 token
+    function WETH9() external view returns (address);
 }
