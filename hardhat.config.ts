@@ -57,6 +57,11 @@ const config: HardhatUserConfig = {
         mnemonic: Wallet.createRandom().mnemonic?.phrase,
         path: "m/44'/60'/0'/0",
       },
+      forking: {
+        // url: `https://base-mainnet.public.blastapi.io`,
+        url: "https://base-mainnet.g.alchemy.com/v2/S27PJBu05du-E99LO2lbpisg2OGnrElJ",
+        blockNumber: 30241554,
+      },
       chainId: 31337,
     },
     "base-mainnet": {

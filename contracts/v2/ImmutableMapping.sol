@@ -32,44 +32,66 @@ contract ImmutableMapping {
     /**
      * @notice Creates a new mapping entry for an origin to an address
      * @param origin The origin string
+     * @return _address The address of the mapping
      */
     function createMapping(string calldata origin) external returns (address _address) {
         if (_originToAddress[origin] != address(0)) revert AlreadyMapped(origin);
-        _address = _createMapping(origin);
-        _setCreator(_address, msg.sender);
+        _address = _createMapping(origin, msg.sender);
     }
 
     /**
-     * @notice Creates a new mapping entry for an origin to an address
+     * @notice Creates a new mapping entry if one does not exist, else returns the existing address
+     * @param origin The origin string
+     * @return _address The address of the mapping
+     */
+    function safeCreateMapping(string calldata origin) external returns (address _address) {
+        _address = _originToAddress[origin];
+        if (_address == address(0)) {
+            _address = _createMapping(origin, msg.sender);
+        }
+    }
+
+    /**
+     * @notice Creates a new mapping entry for an origin to an address if one does not exist,
+     * else returns the existing address
      * @dev Allows setting the creator address to one other than the caller
      * @param origin The origin string
      * @param creator The creator address
+     * @return _address The address of the mapping
      */
     function createMappingFor(string calldata origin, address creator) external returns (address _address) {
         if (creator == address(0)) revert ZeroAddress();
         if (_originToAddress[origin] != address(0)) revert AlreadyMapped(origin);
-        _address = _createMapping(origin);
-        _setCreator(_address, creator);
+        _address = _createMapping(origin, creator);
+    }
+
+    /**
+     * @notice Creates a new mapping entry for an origin to an address if one does not exist,
+     * else returns the existing address
+     * @dev Allows setting the creator address to one other than the caller
+     * @param origin The origin string
+     * @param creator The creator address
+     * @return _address The address of the mapping
+     */
+    function safeCreateMappingFor(string calldata origin, address creator) external returns (address _address) {
+        if (creator == address(0)) revert ZeroAddress();
+        _address = _originToAddress[origin];
+        if (_address == address(0)) {
+            _address = _createMapping(origin, creator);
+        }
     }
 
     /**
      * @notice Creates a new mapping entry for an origin to an address
      * @param origin The origin string
      */
-    function _createMapping(string calldata origin) internal returns (address _address) {
+    function _createMapping(string calldata origin, address creator) internal returns (address _address) {
         _address = _createDeterministicAddress(origin);
         _addressToOrigin[_address] = origin;
         _originToAddress[origin] = _address;
-
-        emit OriginMapped(_address, origin, msg.sender);
-    }
-
-    /**
-     * @notice Sets the creator of a mapping
-     * @param _address The address
-     */
-    function _setCreator(address _address, address creator) internal {
         _addressToCreator[_address] = creator;
+
+        emit OriginMapped(_address, origin, creator);
     }
 
     /**

@@ -5,7 +5,7 @@ import { ethers } from "hardhat";
 
 import { ImmutableMapping, ImmutableMapping__factory } from "../../types";
 
-describe("Immutable Ratings", () => {
+describe("Immutable Mapping", () => {
   let deployer: SignerWithAddress;
   let receiver: SignerWithAddress;
   let alice: SignerWithAddress;
@@ -57,6 +57,19 @@ describe("Immutable Ratings", () => {
     });
   });
 
+  describe("safeCreateMapping", () => {
+    it("should create a mapping", async () => {
+      await mapping.safeCreateMapping(knownOrigin);
+      expect(await mapping.addressOf(knownOrigin)).to.equal(knownIdentity);
+    });
+
+    it("should return the existing address if it already exists", async () => {
+      await mapping.createMapping(knownOrigin);
+      const address = await mapping.safeCreateMapping.staticCall(knownOrigin);
+      expect(address).to.equal(knownIdentity);
+    });
+  });
+
   describe("createMappingFor", () => {
     it("should create a mapping for a specific creator", async () => {
       await mapping.createMappingFor(knownOrigin, alice.address);
@@ -78,6 +91,26 @@ describe("Immutable Ratings", () => {
 
     it("should revert if the creator is the zero address", async () => {
       await expect(mapping.createMappingFor(knownOrigin, ethers.ZeroAddress)).to.be.revertedWithCustomError(
+        mapping,
+        "ZeroAddress",
+      );
+    });
+  });
+
+  describe("safeCreateMappingFor", () => {
+    it("should create a mapping for a specific creator", async () => {
+      await mapping.safeCreateMappingFor(knownOrigin, alice.address);
+      expect(await mapping.creatorOf(knownIdentity)).to.equal(alice.address);
+    });
+
+    it("should return the existing address if it already exists", async () => {
+      await mapping.createMappingFor(knownOrigin, alice.address);
+      const address = await mapping.safeCreateMappingFor.staticCall(knownOrigin, alice.address);
+      expect(address).to.equal(knownIdentity);
+    });
+
+    it("should revert if the creator is the zero address", async () => {
+      await expect(mapping.safeCreateMappingFor(knownOrigin, ethers.ZeroAddress)).to.be.revertedWithCustomError(
         mapping,
         "ZeroAddress",
       );

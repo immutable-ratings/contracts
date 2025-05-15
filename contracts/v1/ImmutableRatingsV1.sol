@@ -13,7 +13,7 @@ import {TDN} from "../TDN.sol";
  * @author immutable-ratings
  * @notice Core controller contract for the Immutable Ratings platform
  */
-contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
+contract ImmutableRatingsV1 is Ownable2Step, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     /// @dev The TUP token. Represents upvotes.
