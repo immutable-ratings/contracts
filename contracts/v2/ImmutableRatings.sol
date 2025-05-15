@@ -157,30 +157,14 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
      * @param amount The amount of tokens to rate
      * @param swapParams The parameters for the swap
      */
-    function createUpRatingSwapSingle(
-        string calldata url,
-        uint256 amount,
-        SwapParamsSingle calldata swapParams
-    ) external payable nonReentrant notPaused {
-        _validateRating(amount);
-        _createUpRating(msg.sender, url, amount);
-        _processPaymentSwapSingle(amount, paymentToken, swapParams);
-    }
-
-    /**
-     * @notice Creates an UP rating for a single URL by swapping the target token for the payment token
-     * @param url The url of the market
-     * @param amount The amount of tokens to rate
-     * @param swapParams The parameters for the swap
-     */
-    function createUpRatingSwapMultihop(
+    function createUpRatingSwap(
         string calldata url,
         uint256 amount,
         SwapParamsMultihop calldata swapParams
     ) external payable nonReentrant notPaused {
         _validateRating(amount);
         _createUpRating(msg.sender, url, amount);
-        _processPaymentSwapMultihop(amount, paymentToken, swapParams);
+        _processPaymentSwap(amount, paymentToken, swapParams);
     }
 
     /**
@@ -200,30 +184,14 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
      * @param amount The amount of tokens to rate
      * @param swapParams The parameters for the swap
      */
-    function createDownRatingSwapSingle(
-        string calldata url,
-        uint256 amount,
-        SwapParamsSingle calldata swapParams
-    ) external payable nonReentrant notPaused {
-        _validateRating(amount);
-        _createDownRating(msg.sender, url, amount);
-        _processPaymentSwapSingle(amount, paymentToken, swapParams);
-    }
-
-    /**
-     * @notice Creates a down rating for a single market by swapping the target token for the payment token
-     * @param url The url of the market
-     * @param amount The amount of tokens to rate
-     * @param swapParams The parameters for the swap
-     */
-    function createDownRatingSwapMultihop(
+    function createDownRatingSwap(
         string calldata url,
         uint256 amount,
         SwapParamsMultihop calldata swapParams
     ) external payable nonReentrant notPaused {
         _validateRating(amount);
         _createDownRating(msg.sender, url, amount);
-        _processPaymentSwapMultihop(amount, paymentToken, swapParams);
+        _processPaymentSwap(amount, paymentToken, swapParams);
     }
 
     /**
@@ -306,37 +274,17 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
     }
 
     /**
-     * @notice Processes the payment for a rating, including funds distribution and excess refund using a single swap
-     * @param amount The amount of tokens to rate
-     * @param swapParams The parameters for the swap
-     */
-    function _processPaymentSwapSingle(uint256 amount, address token, SwapParamsSingle calldata swapParams) internal {
-        uint256 price = _getRatingPrice(amount);
-
-        if (token == address(0)) {
-            revert("Not Implemented");
-        } else {
-            _executeSwapSingle(price, swapParams);
-            _distributePaymentErc20(price, address(this));
-        }
-    }
-
-    /**
      * @notice Processes the payment for a rating, including funds distribution and excess refund using a multihop swap
      * @param amount The amount of tokens to rate
      * @param swapParams The parameters for the swap
      */
-    function _processPaymentSwapMultihop(
-        uint256 amount,
-        address token,
-        SwapParamsMultihop calldata swapParams
-    ) internal {
+    function _processPaymentSwap(uint256 amount, address token, SwapParamsMultihop calldata swapParams) internal {
         uint256 price = _getRatingPrice(amount);
 
         if (token == address(0)) {
             revert("Not Implemented");
         } else {
-            _executeSwapMultihop(price, swapParams);
+            _executeSwap(price, swapParams);
             _distributePaymentErc20(price, address(this));
         }
     }
@@ -382,49 +330,11 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
     }
 
     /**
-     * @notice Executes a single hop swap
-     * @param amountOut The amount of tokens to receive
-     * @param swapParams The parameters for the swap
-     */
-    function _executeSwapSingle(
-        uint256 amountOut,
-        SwapParamsSingle calldata swapParams
-    ) internal returns (uint256 amountIn) {
-        if (swapParams.token != address(0)) {
-            console.log("Token Transfer & Approval");
-
-            TransferHelper.safeTransferFrom(swapParams.token, msg.sender, address(this), swapParams.amountInMaximum);
-            TransferHelper.safeApprove(swapParams.token, address(swapRouter), swapParams.amountInMaximum);
-        }
-
-        IV3SwapRouter.ExactOutputSingleParams memory params = IV3SwapRouter.ExactOutputSingleParams({
-            tokenIn: swapParams.token,
-            tokenOut: paymentToken,
-            fee: swapParams.fee,
-            recipient: address(this),
-            amountOut: amountOut,
-            amountInMaximum: swapParams.amountInMaximum,
-            sqrtPriceLimitX96: 0
-        });
-
-        amountIn = swapRouter.exactOutputSingle(params);
-
-        // If the swap did not require the full amountInMaximum to achieve the exact amountOut then we
-        // refund msg.sender and approve the router to spend 0.
-        if (amountIn < swapParams.amountInMaximum) {
-            TransferHelper.safeApprove(swapParams.token, address(swapRouter), 0);
-            TransferHelper.safeTransfer(swapParams.token, msg.sender, swapParams.amountInMaximum - amountIn);
-        }
-
-        emit SwapExecuted(msg.sender, amountIn, amountOut);
-    }
-
-    /**
      * Execute a UniSwap exact output multihop swap into the payment token
      * @param amountOut The amount of tokens to receive
      * @param swapParams The parameters for the swap
      */
-    function _executeSwapMultihop(
+    function _executeSwap(
         uint256 amountOut,
         SwapParamsMultihop calldata swapParams
     ) internal returns (uint256 amountIn) {
@@ -449,10 +359,12 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
             TransferHelper.safeTransfer(swapParams.token, msg.sender, swapParams.amountInMaximum - amountIn);
         }
 
-        // If the swap did not result in the exact amountOut of the payment token then we revert.
+        // If the swap did not result in the exact amountOut of the payment token then we revert
+        // This doubles as a check on the path being correct
         if (IERC20(paymentToken).balanceOf(address(this)) != amountOut) {
             revert InvalidPayment();
         }
+
         emit SwapExecuted(msg.sender, amountIn, amountOut);
     }
 

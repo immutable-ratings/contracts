@@ -348,31 +348,7 @@ describe("Immutable Ratings", () => {
       _address = await mapping.previewAddress(url);
     });
 
-    describe("createUpRatingSwapSingle", () => {
-      const swapParams: ImmutableRatings.SwapParamsSingleStruct = {
-        token: tokens.degen.address,
-        fee: 10000, // 1%
-        amountInMaximum: parseDegen("100"),
-      };
-
-      it("should create an up rating", async () => {
-        expect(await tup.balanceOf(_address)).to.equal(0);
-        await degen.approve(immutableRatings.target, MaxInt256);
-        await expect(immutableRatings.createUpRatingSwapSingle(url, amount, swapParams)).changeTokenBalances(
-          usdc,
-          [receiver.address],
-          [parseUsdc("0.1")],
-        );
-        expect(await tup.balanceOf(_address)).to.equal(amount);
-      });
-
-      it("should revert if insufficient payment", async () => {
-        await usdc.transfer(receiver.address, await usdc.balanceOf(deployer.address));
-        await expect(immutableRatings.createUpRatingSwapSingle(url, amount, swapParams)).to.be.revertedWith("STF");
-      });
-    });
-
-    describe("createUpRatingSwapMultihop", () => {
+    describe("createUpRatingSwap", () => {
       const swapParams: ImmutableRatings.SwapParamsMultihopStruct = {
         token: tokens.degen.address,
         path: solidityPacked(["address", "uint24", "address"], [tokens.usdc.address, 10000, tokens.degen.address]),
@@ -382,11 +358,39 @@ describe("Immutable Ratings", () => {
       it("should create an up rating", async () => {
         expect(await tup.balanceOf(_address)).to.equal(0);
         await degen.approve(immutableRatings.target, MaxInt256);
-        await expect(immutableRatings.createUpRatingSwapMultihop(url, amount, swapParams)).changeTokenBalances(
+        await expect(immutableRatings.createUpRatingSwap(url, amount, swapParams)).changeTokenBalances(
           usdc,
           [receiver.address],
           [parseUsdc("0.1")],
         );
+      });
+
+      it("should revert if insufficient payment", async () => {
+        await usdc.transfer(receiver.address, await usdc.balanceOf(deployer.address));
+        await expect(immutableRatings.createUpRatingSwap(url, amount, swapParams)).to.be.revertedWith("STF");
+      });
+    });
+
+    describe("createDownRatingSwap", () => {
+      const swapParams: ImmutableRatings.SwapParamsMultihopStruct = {
+        token: tokens.degen.address,
+        path: solidityPacked(["address", "uint24", "address"], [tokens.usdc.address, 10000, tokens.degen.address]),
+        amountInMaximum: parseDegen("100"),
+      };
+
+      it("should create a down rating", async () => {
+        expect(await tdn.balanceOf(_address)).to.equal(0);
+        await degen.approve(immutableRatings.target, MaxInt256);
+        await expect(immutableRatings.createDownRatingSwap(url, amount, swapParams)).changeTokenBalances(
+          usdc,
+          [receiver.address],
+          [parseUsdc("0.1")],
+        );
+      });
+
+      it("should revert if insufficient payment", async () => {
+        await usdc.transfer(receiver.address, await usdc.balanceOf(deployer.address));
+        await expect(immutableRatings.createDownRatingSwap(url, amount, swapParams)).to.be.revertedWith("STF");
       });
     });
   });
