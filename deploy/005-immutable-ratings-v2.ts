@@ -1,7 +1,9 @@
 import assert from "assert";
 import { type DeployFunction } from "hardhat-deploy/types";
 
-const contractName = "TUP";
+import { getConfig } from "../deployments";
+
+const contractName = "ImmutableRatings";
 
 const deploy: DeployFunction = async (hre) => {
   const { getNamedAccounts, deployments } = hre;
@@ -14,11 +16,17 @@ const deploy: DeployFunction = async (hre) => {
   console.log(`Network: ${hre.network.name}`);
   console.log(`Deployer: ${deployer}`);
 
+  const { receiver, swapRouter, paymentToken, ratingPrice } = getConfig(hre.network.config.chainId!);
+
+  const tup = await deployments.get("TUP");
+  const tdn = await deployments.get("TDN");
+  const immutableMapping = await deployments.get("ImmutableMapping");
+
   const { address } = await deploy(contractName, {
     from: deployer,
-    args: [],
+    args: [tup.address, tdn.address, immutableMapping.address, receiver, swapRouter, paymentToken, ratingPrice],
     log: true,
-    skipIfAlreadyDeployed: true,
+    skipIfAlreadyDeployed: false,
   });
 
   console.log(`Deployed contract: ${contractName}, network: ${hre.network.name}, address: ${address}`);

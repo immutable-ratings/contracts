@@ -1,3 +1,5 @@
+import { parseUsdc } from "./test/v2/tokens.test";
+
 export interface ImmutableRatingsContracts {
   TUP: string;
   TDN: string;
@@ -23,10 +25,16 @@ export const deployConfig = {
   // Base Sepolia
   84532: {
     receiver: "0x30e7120ce8c0ABA197f1C4EccF2F4E1e1C75ab1d", // https://app.splits.org/accounts/0x30e7120ce8c0ABA197f1C4EccF2F4E1e1C75ab1d/?chainId=84532
+    paymentToken: "0x9040dBA0e68d3B45983F3767cC5667c5f1873059", // mUSDC
+    swapRouter: "0x2626664c2603336E57B271c5C0b26F421741e481", // Uniswap V3 Swap Router
+    ratingPrice: parseUsdc("0.1"),
   },
   // Base Mainnet
   8453: {
     receiver: "0xc1Ec5b421905290F477C741ADf97c062921AA18A", // https://app.splits.org/accounts/0xc1Ec5b421905290F477C741ADf97c062921AA18A/?chainId=8453
+    paymentToken: "0x4200000000000000000000000000000000000006", // ETH
+    swapRouter: "0x2626664c2603336E57B271c5C0b26F421741e481", // Uniswap V3 Swap Router
+    ratingPrice: parseUsdc("0.1"),
   },
 };
 

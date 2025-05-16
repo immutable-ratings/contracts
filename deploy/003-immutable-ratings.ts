@@ -6,6 +6,7 @@ import { getConfig } from "../deployments";
 const contractName = "ImmutableRatings";
 
 const deploy: DeployFunction = async (hre) => {
+  throw new Error("Deprecated");
   const { getNamedAccounts, deployments } = hre;
 
   const { deploy } = deployments;
