@@ -26,6 +26,7 @@ import { Token, parseDegen, parseUsdc, tokens } from "./tokens.test";
 const price = parseUsdc("0.0001"); // $0.0001 USDC
 const swapRouter = SWAP_ROUTER_02_ADDRESSES(8453);
 const weth = WETH9[8453].address;
+const data = "0x";
 
 describe("Immutable Ratings", () => {
   let deployer: SignerWithAddress;
@@ -237,24 +238,24 @@ describe("Immutable Ratings", () => {
 
     it("should create an up rating", async () => {
       expect(await tup.balanceOf(_address)).to.equal(0);
-      await immutableRatings.createUpRating(url, amount);
+      await immutableRatings.createUpRating(url, amount, data);
       expect(await tup.balanceOf(_address)).to.equal(amount);
     });
 
     it("should update user rating count", async () => {
-      await immutableRatings.createUpRating(url, amount);
+      await immutableRatings.createUpRating(url, amount, data);
       const ratingCount = await immutableRatings.getUserRatings(deployer.address);
       expect(ratingCount).to.equal(amount);
     });
 
     it("should emit RatingUpCreated event", async () => {
-      await expect(immutableRatings.createUpRating(url, amount))
+      await expect(immutableRatings.createUpRating(url, amount, data))
         .to.emit(immutableRatings, "RatingUpCreated")
-        .withArgs(deployer.address, url, amount);
+        .withArgs(deployer.address, url, amount, data);
     });
 
     it("should distribute payment to receiver", async () => {
-      await expect(immutableRatings.createUpRating(url, amount)).to.changeTokenBalances(
+      await expect(immutableRatings.createUpRating(url, amount, data)).to.changeTokenBalances(
         usdc,
         [deployer.address, receiver.address],
         [-payment, payment],
@@ -263,11 +264,11 @@ describe("Immutable Ratings", () => {
 
     it("should revert if insufficient payment", async () => {
       await usdc.transfer(receiver.address, await usdc.balanceOf(deployer.address));
-      await expect(immutableRatings.createUpRating(url, amount)).to.be.revertedWith("STF");
+      await expect(immutableRatings.createUpRating(url, amount, data)).to.be.revertedWith("STF");
     });
 
     it("should revert if invalid amount", async () => {
-      await expect(immutableRatings.createUpRating(url, parseEther("0.1"))).to.be.revertedWithCustomError(
+      await expect(immutableRatings.createUpRating(url, parseEther("0.1"), data)).to.be.revertedWithCustomError(
         immutableRatings,
         "InvalidRatingAmount",
       );
@@ -275,7 +276,7 @@ describe("Immutable Ratings", () => {
 
     it("should revert if the contract is paused", async () => {
       await immutableRatings.setIsPaused(true);
-      await expect(immutableRatings.createUpRating(url, amount)).to.be.revertedWithCustomError(
+      await expect(immutableRatings.createUpRating(url, amount, data)).to.be.revertedWithCustomError(
         immutableRatings,
         "ContractPaused",
       );
@@ -295,24 +296,24 @@ describe("Immutable Ratings", () => {
 
     it("should create a down rating", async () => {
       expect(await tdn.balanceOf(_address)).to.equal(0);
-      await immutableRatings.createDownRating(url, amount);
+      await immutableRatings.createDownRating(url, amount, data);
       expect(await tdn.balanceOf(_address)).to.equal(amount);
     });
 
     it("should update user rating count", async () => {
-      await immutableRatings.createDownRating(url, amount);
+      await immutableRatings.createDownRating(url, amount, data);
       const ratingCount = await immutableRatings.getUserRatings(deployer.address);
       expect(ratingCount).to.equal(amount);
     });
 
     it("should emit RatingDownCreated event", async () => {
-      await expect(immutableRatings.createDownRating(url, amount))
+      await expect(immutableRatings.createDownRating(url, amount, data))
         .to.emit(immutableRatings, "RatingDownCreated")
-        .withArgs(deployer.address, url, amount);
+        .withArgs(deployer.address, url, amount, data);
     });
 
     it("should distribute payment to receiver", async () => {
-      await expect(immutableRatings.createDownRating(url, amount)).to.changeTokenBalances(
+      await expect(immutableRatings.createDownRating(url, amount, data)).to.changeTokenBalances(
         usdc,
         [deployer.address, receiver.address],
         [-payment, payment],
@@ -321,11 +322,11 @@ describe("Immutable Ratings", () => {
 
     it("should revert if insufficient payment", async () => {
       await usdc.transfer(receiver.address, await usdc.balanceOf(deployer.address));
-      await expect(immutableRatings.createDownRating(url, amount)).to.be.revertedWith("STF");
+      await expect(immutableRatings.createDownRating(url, amount, data)).to.be.revertedWith("STF");
     });
 
     it("should revert if invalid amount", async () => {
-      await expect(immutableRatings.createDownRating(url, parseEther("0.1"))).to.be.revertedWithCustomError(
+      await expect(immutableRatings.createDownRating(url, parseEther("0.1"), data)).to.be.revertedWithCustomError(
         immutableRatings,
         "InvalidRatingAmount",
       );
@@ -333,7 +334,7 @@ describe("Immutable Ratings", () => {
 
     it("should revert if the contract is paused", async () => {
       await immutableRatings.setIsPaused(true);
-      await expect(immutableRatings.createDownRating(url, amount)).to.be.revertedWithCustomError(
+      await expect(immutableRatings.createDownRating(url, amount, data)).to.be.revertedWithCustomError(
         immutableRatings,
         "ContractPaused",
       );
@@ -359,7 +360,7 @@ describe("Immutable Ratings", () => {
       it("should create an up rating", async () => {
         expect(await tup.balanceOf(_address)).to.equal(0);
         await degen.approve(immutableRatings.target, MaxInt256);
-        await expect(immutableRatings.createUpRatingSwap(url, amount, swapParams)).changeTokenBalances(
+        await expect(immutableRatings.createUpRatingSwap(url, amount, swapParams, data)).changeTokenBalances(
           usdc,
           [receiver.address],
           [parseUsdc("0.1")],
@@ -368,10 +369,10 @@ describe("Immutable Ratings", () => {
 
       it("should revert if insufficient payment", async () => {
         await usdc.transfer(receiver.address, await usdc.balanceOf(deployer.address));
-        await expect(immutableRatings.createUpRatingSwap(url, amount, swapParams)).to.be.revertedWith("STF");
+        await expect(immutableRatings.createUpRatingSwap(url, amount, swapParams, data)).to.be.revertedWith("STF");
       });
 
-      it.only("should swap a native token", async () => {
+      it("should swap a native token", async () => {
         const swapParams: ImmutableRatings.SwapParamsMultihopStruct = {
           token: ZeroAddress,
           path: solidityPacked(["address", "uint24", "address"], [tokens.usdc.address, 500, weth]),
@@ -380,14 +381,9 @@ describe("Immutable Ratings", () => {
 
         const balanceBefore = await ethers.provider.getBalance(deployer.address);
         await expect(
-          immutableRatings.createUpRatingSwap(url, amount, swapParams, { value: parseEther("1.0") }),
+          immutableRatings.createUpRatingSwap(url, amount, swapParams, data, { value: parseEther("1.0") }),
         ).changeTokenBalances(usdc, [receiver.address], [parseUsdc("0.1")]);
         const balanceAfter = await ethers.provider.getBalance(deployer.address);
-        console.log({
-          b: balanceBefore,
-          a: balanceAfter,
-          d: balanceAfter - balanceBefore,
-        });
       });
     });
 
@@ -401,7 +397,7 @@ describe("Immutable Ratings", () => {
       it("should create a down rating", async () => {
         expect(await tdn.balanceOf(_address)).to.equal(0);
         await degen.approve(immutableRatings.target, MaxInt256);
-        await expect(immutableRatings.createDownRatingSwap(url, amount, swapParams)).changeTokenBalances(
+        await expect(immutableRatings.createDownRatingSwap(url, amount, swapParams, data)).changeTokenBalances(
           usdc,
           [receiver.address],
           [parseUsdc("0.1")],
@@ -410,7 +406,7 @@ describe("Immutable Ratings", () => {
 
       it("should revert if insufficient payment", async () => {
         await usdc.transfer(receiver.address, await usdc.balanceOf(deployer.address));
-        await expect(immutableRatings.createDownRatingSwap(url, amount, swapParams)).to.be.revertedWith("STF");
+        await expect(immutableRatings.createDownRatingSwap(url, amount, swapParams, data)).to.be.revertedWith("STF");
       });
     });
 
@@ -438,7 +434,7 @@ describe("Immutable Ratings", () => {
       it("should get the user ratings", async () => {
         expect(await immutableRatings.getUserRatings(deployer.address)).to.equal(0);
         await usdc.approve(immutableRatings.target, MaxInt256);
-        await immutableRatings.createUpRating("https://www.example.com", parseEther("1000"));
+        await immutableRatings.createUpRating("https://www.example.com", parseEther("1000"), data);
         expect(await immutableRatings.getUserRatings(deployer.address)).to.equal(parseEther("1000"));
       });
     });
@@ -583,38 +579,38 @@ describe("Immutable Ratings", () => {
 
     describe("createUpRating", () => {
       it("should create an up rating", async () => {
-        await nativeImmutableRatings.createUpRating(url, amount, { value });
+        await nativeImmutableRatings.createUpRating(url, amount, data, { value });
         expect(await tup.balanceOf(_address)).to.equal(amount);
       });
 
       it("should revert if the value is less than the payment", async () => {
         await expect(
-          nativeImmutableRatings.createUpRating(url, amount, { value: parseEther("0.00009") }),
+          nativeImmutableRatings.createUpRating(url, amount, data, { value: parseEther("0.00009") }),
         ).to.be.revertedWithCustomError(nativeImmutableRatings, "InvalidPayment");
       });
 
       it("should revert if the value is greater than the payment", async () => {
         await expect(
-          nativeImmutableRatings.createUpRating(url, amount, { value: parseEther("0.11") }),
+          nativeImmutableRatings.createUpRating(url, amount, data, { value: parseEther("0.11") }),
         ).to.be.revertedWithCustomError(nativeImmutableRatings, "InvalidPayment");
       });
     });
 
     describe("createDownRating", () => {
       it("should create a down rating", async () => {
-        await nativeImmutableRatings.createDownRating(url, amount, { value });
+        await nativeImmutableRatings.createDownRating(url, amount, data, { value });
         expect(await tdn.balanceOf(_address)).to.equal(amount);
       });
 
       it("should revert if the value is less than the payment", async () => {
         await expect(
-          nativeImmutableRatings.createDownRating(url, amount, { value: parseEther("0.00009") }),
+          nativeImmutableRatings.createDownRating(url, amount, data, { value: parseEther("0.00009") }),
         ).to.be.revertedWithCustomError(nativeImmutableRatings, "InvalidPayment");
       });
 
       it("should revert if the value is greater than the payment", async () => {
         await expect(
-          nativeImmutableRatings.createDownRating(url, amount, { value: parseEther("0.11") }),
+          nativeImmutableRatings.createDownRating(url, amount, data, { value: parseEther("0.11") }),
         ).to.be.revertedWithCustomError(nativeImmutableRatings, "InvalidPayment");
       });
     });
@@ -629,7 +625,7 @@ describe("Immutable Ratings", () => {
       it("should create an up rating", async () => {
         expect(await tup.balanceOf(_address)).to.equal(0);
         await usdc.approve(nativeImmutableRatings.target, MaxInt256);
-        await expect(nativeImmutableRatings.createUpRatingSwap(url, amount, swapParams)).changeEtherBalance(
+        await expect(nativeImmutableRatings.createUpRatingSwap(url, amount, swapParams, data)).changeEtherBalance(
           receiver.address,
           value,
         );
@@ -637,7 +633,9 @@ describe("Immutable Ratings", () => {
 
       it("should revert if insufficient payment", async () => {
         await usdc.transfer(receiver.address, await usdc.balanceOf(deployer.address));
-        await expect(nativeImmutableRatings.createUpRatingSwap(url, amount, swapParams)).to.be.revertedWith("STF");
+        await expect(nativeImmutableRatings.createUpRatingSwap(url, amount, swapParams, data)).to.be.revertedWith(
+          "STF",
+        );
       });
     });
 
@@ -651,7 +649,7 @@ describe("Immutable Ratings", () => {
       it("should create a down rating", async () => {
         expect(await tdn.balanceOf(_address)).to.equal(0);
         await usdc.approve(nativeImmutableRatings.target, MaxInt256);
-        await expect(nativeImmutableRatings.createDownRatingSwap(url, amount, swapParams)).changeEtherBalance(
+        await expect(nativeImmutableRatings.createDownRatingSwap(url, amount, swapParams, data)).changeEtherBalance(
           receiver.address,
           value,
         );
@@ -659,7 +657,9 @@ describe("Immutable Ratings", () => {
 
       it("should revert if insufficient payment", async () => {
         await usdc.transfer(receiver.address, await usdc.balanceOf(deployer.address));
-        await expect(nativeImmutableRatings.createDownRatingSwap(url, amount, swapParams)).to.be.revertedWith("STF");
+        await expect(nativeImmutableRatings.createDownRatingSwap(url, amount, swapParams, data)).to.be.revertedWith(
+          "STF",
+        );
       });
     });
   });

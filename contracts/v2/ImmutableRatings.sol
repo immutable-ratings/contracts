@@ -63,8 +63,8 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
     }
 
     // Events
-    event RatingUpCreated(address indexed user, string url, uint256 amount);
-    event RatingDownCreated(address indexed user, string url, uint256 amount);
+    event RatingUpCreated(address indexed user, string url, uint256 amount, bytes data);
+    event RatingDownCreated(address indexed user, string url, uint256 amount, bytes data);
     event Paused(bool isPaused);
     event SwapExecuted(address indexed user, uint256 amountIn, uint256 amountOut);
     event ReceiverUpdated(address indexed newReceiver);
@@ -157,9 +157,14 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
     /// @notice Creates an UP rating for a single URL using the default payment token
     /// @param url The url of the market
     /// @param amount The amount of tokens to rate
-    function createUpRating(string calldata url, uint256 amount) external payable nonReentrant notPaused {
+    /// @param data Optional data to be emitted with the rating
+    function createUpRating(
+        string calldata url,
+        uint256 amount,
+        bytes calldata data
+    ) external payable nonReentrant notPaused {
         _validateRating(amount);
-        _createUpRating(msg.sender, url, amount);
+        _createUpRating(msg.sender, url, amount, data);
         _processPayment(amount);
     }
 
@@ -167,22 +172,29 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
     /// @param url The url of the market
     /// @param amount The amount of tokens to rate
     /// @param swapParams The parameters for the swap
+    /// @param data Optional data to be emitted with the rating
     function createUpRatingSwap(
         string calldata url,
         uint256 amount,
-        SwapParamsMultihop calldata swapParams
+        SwapParamsMultihop calldata swapParams,
+        bytes calldata data
     ) external payable nonReentrant notPaused {
         _validateRating(amount);
-        _createUpRating(msg.sender, url, amount);
+        _createUpRating(msg.sender, url, amount, data);
         _processPaymentSwap(amount, swapParams);
     }
 
     /// @notice Creates a down rating for a single market
     /// @param url The url of the market
     /// @param amount The amount of tokens to rate
-    function createDownRating(string calldata url, uint256 amount) external payable nonReentrant notPaused {
+    /// @param data Optional data to be emitted with the rating
+    function createDownRating(
+        string calldata url,
+        uint256 amount,
+        bytes calldata data
+    ) external payable nonReentrant notPaused {
         _validateRating(amount);
-        _createDownRating(msg.sender, url, amount);
+        _createDownRating(msg.sender, url, amount, data);
         _processPayment(amount);
     }
 
@@ -190,13 +202,15 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
     /// @param url The url of the market
     /// @param amount The amount of tokens to rate
     /// @param swapParams The parameters for the swap
+    /// @param data Optional data to be emitted with the rating
     function createDownRatingSwap(
         string calldata url,
         uint256 amount,
-        SwapParamsMultihop calldata swapParams
+        SwapParamsMultihop calldata swapParams,
+        bytes calldata data
     ) external payable nonReentrant notPaused {
         _validateRating(amount);
-        _createDownRating(msg.sender, url, amount);
+        _createDownRating(msg.sender, url, amount, data);
         _processPaymentSwap(amount, swapParams);
     }
 
@@ -204,20 +218,22 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
     /// @param from The address of the user
     /// @param url The url of the market
     /// @param amount The amount of tokens to rate
-    function _createUpRating(address from, string calldata url, uint256 amount) internal {
+    /// @param data Optional data to be emitted with the rating
+    function _createUpRating(address from, string calldata url, uint256 amount, bytes calldata data) internal {
         address _address = _getUrlAddress(url, from);
         tokenUp.mint(from, _address, amount);
-        emit RatingUpCreated(from, url, amount);
+        emit RatingUpCreated(from, url, amount, data);
     }
 
     /// @dev Creates a DOWN rating. Does not validate the rating amount or user count.
     /// @param from The address of the user
     /// @param url The url of the market
     /// @param amount The amount of tokens to rate
-    function _createDownRating(address from, string calldata url, uint256 amount) internal {
+    /// @param data Optional data to be emitted with the rating
+    function _createDownRating(address from, string calldata url, uint256 amount, bytes calldata data) internal {
         address _address = _getUrlAddress(url, from);
         tokenDown.mint(from, _address, amount);
-        emit RatingDownCreated(from, url, amount);
+        emit RatingDownCreated(from, url, amount, data);
     }
 
     /// @dev Gets the address of a URL from the Immutable Mapping contract or creates a new one if it doesn't exist
@@ -362,13 +378,13 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
     /// @param swapParams The parameters for the swap
     function _validatePath(SwapParamsMultihop calldata swapParams) internal view {
         address destination = _toAddress(swapParams.path, 0);
-        address destinationTarget = paymentToken == address(0) ? weth9() : paymentToken;
+        address destinationTarget = paymentToken == address(0) ? address(weth) : paymentToken;
         if (destination != destinationTarget) {
             revert InvalidSwapPath();
         }
 
         address source = _toAddress(swapParams.path, swapParams.path.length - 20);
-        address sourceTarget = swapParams.token == address(0) ? weth9() : swapParams.token;
+        address sourceTarget = swapParams.token == address(0) ? address(weth) : swapParams.token;
         if (source != sourceTarget) {
             revert InvalidSwapPath();
         }
@@ -389,11 +405,6 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
         }
 
         return tempAddress;
-    }
-
-    /// @dev Returns the WETH9 token contract
-    function weth9() internal view returns (address) {
-        return swapRouter.WETH9();
     }
 
     /// @notice Recovers ERC20 tokens from the contract
