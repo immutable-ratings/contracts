@@ -3,13 +3,13 @@ pragma solidity ^0.8.22;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
-import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
 import {IV3SwapRouter} from "./interfaces/IV3SwapRouter.sol";
 import {IWETH} from "./interfaces/IWETH.sol";
+import {IRatingHook} from "./hooks/IRatingHook.sol";
 import {ImmutableMapping} from "./ImmutableMapping.sol";
 import {TUP} from "../TUP.sol";
 import {TDN} from "../TDN.sol";
@@ -17,7 +17,14 @@ import {TDN} from "../TDN.sol";
 /// @title Immutable Ratings
 /// @author immutable-ratings
 /// @notice Core controller contract for the Immutable Ratings platform
-contract ImmutableRatings is Initializable, UUPSUpgradeable, Ownable2StepUpgradeable, ReentrancyGuardUpgradeable {
+contract ImmutableRatings is
+    Initializable,
+    UUPSUpgradeable,
+    AccessControlEnumerableUpgradeable,
+    ReentrancyGuardUpgradeable
+{
+    string public constant VERSION = "2.0.0";
+
     /// @dev The TUP token. Represents upvotes.
     TUP public tokenUp;
 
@@ -29,18 +36,13 @@ contract ImmutableRatings is Initializable, UUPSUpgradeable, Ownable2StepUpgrade
 
     /// @dev The Uniswap V3 swap router
     IV3SwapRouter public swapRouter;
-
     /// @dev The WETH9 token as per the swap router implementation
     IWETH public weth;
-
-    /// @dev This contract is immutable and non-upgradeable.
-    /// Further versions of this contract will be deployed independently.
-    string public constant VERSION = "2.0.0";
 
     /// @dev The price of a rating in wei
     uint256 public ratingPrice;
 
-    /// @dev The address of the payment token
+    /// @dev The payment token in which the rating price is denominated
     address public paymentToken;
 
     /// @dev Address of the fee receiver
@@ -49,16 +51,17 @@ contract ImmutableRatings is Initializable, UUPSUpgradeable, Ownable2StepUpgrade
     /// @dev Whether the contract is paused
     bool public isPaused;
 
+    /// @dev An optional hook contract to be called for a specific rating
+    mapping(address _address => IRatingHook _hook) public hooks;
+
+    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
+    bytes32 public constant HOOK_OPERATOR_ROLE = keccak256("HOOK_OPERATOR_ROLE");
+
     /// @dev Defines storage gap for future upgrades
     uint256[50] private __gap;
 
-    struct SwapParamsSingle {
-        address token;
-        uint256 amountInMaximum;
-        uint24 fee;
-    }
-
-    struct SwapParamsMultihop {
+    struct SwapParams {
         address token;
         bytes path;
         uint256 amountInMaximum;
@@ -72,6 +75,7 @@ contract ImmutableRatings is Initializable, UUPSUpgradeable, Ownable2StepUpgrade
     event ReceiverUpdated(address indexed newReceiver);
     event PaymentTokenUpdated(address indexed newPaymentToken);
     event RatingPriceUpdated(uint256 newRatingPrice);
+    event HookSet(address indexed _address, IRatingHook hook);
 
     // Errors
     error ZeroAddress();
@@ -80,6 +84,7 @@ contract ImmutableRatings is Initializable, UUPSUpgradeable, Ownable2StepUpgrade
     error InvalidPayment();
     error InvalidSwapPath();
     error OutOfBounds();
+    error RatingNotAllowed();
 
     /// @dev Enforces that a function can only be called if the contract is not paused
     modifier notPaused() {
@@ -103,8 +108,7 @@ contract ImmutableRatings is Initializable, UUPSUpgradeable, Ownable2StepUpgrade
         address _paymentToken,
         uint256 _ratingPrice
     ) public initializer {
-        __Ownable2Step_init();
-        __Ownable_init(msg.sender);
+        __AccessControlEnumerable_init();
         __ReentrancyGuard_init();
         __UUPSUpgradeable_init();
 
@@ -125,6 +129,8 @@ contract ImmutableRatings is Initializable, UUPSUpgradeable, Ownable2StepUpgrade
         swapRouter = IV3SwapRouter(_swapRouter);
         weth = IWETH(swapRouter.WETH9());
         isPaused = false;
+
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -141,34 +147,42 @@ contract ImmutableRatings is Initializable, UUPSUpgradeable, Ownable2StepUpgrade
 
     /// @notice Sets the fee receiver address
     /// @param _receiver The address of the fee receiver
-    function setReceiver(address _receiver) external onlyOwner {
+    function setReceiver(address _receiver) external onlyRole(OPERATOR_ROLE) {
         receiver = _receiver;
         emit ReceiverUpdated(_receiver);
     }
 
     /// @notice Pauses or unpauses the contract
     /// @param _isPaused Whether to pause the contract
-    function setIsPaused(bool _isPaused) external onlyOwner {
+    function setIsPaused(bool _isPaused) external onlyRole(OPERATOR_ROLE) {
         isPaused = _isPaused;
         emit Paused(_isPaused);
     }
 
     /// @notice Sets the payment token
     /// @param _paymentToken The address of the payment token
-    function setPaymentToken(address _paymentToken) external onlyOwner {
+    function setPaymentToken(address _paymentToken) external onlyRole(OPERATOR_ROLE) {
         paymentToken = _paymentToken;
         emit PaymentTokenUpdated(_paymentToken);
     }
 
     /// @notice Sets the rating price
     /// @param _ratingPrice The price of a rating in wei
-    function setRatingPrice(uint256 _ratingPrice) external onlyOwner {
+    function setRatingPrice(uint256 _ratingPrice) external onlyRole(OPERATOR_ROLE) {
         ratingPrice = _ratingPrice;
         emit RatingPriceUpdated(_ratingPrice);
     }
 
+    /// @notice Sets a hook for a specific URL
+    /// @param _address The address of the URL
+    /// @param _hook The hook to set
+    function setHook(address _address, IRatingHook _hook) external onlyRole(HOOK_OPERATOR_ROLE) {
+        hooks[_address] = _hook;
+        emit HookSet(_address, _hook);
+    }
+
     /// @notice Creates an UP rating for a single URL using the default payment token
-    /// @param url The url of the market
+    /// @param url The URL to rate
     /// @param amount The amount of tokens to rate
     /// @param data Optional data to be emitted with the rating
     function createUpRating(
@@ -176,29 +190,29 @@ contract ImmutableRatings is Initializable, UUPSUpgradeable, Ownable2StepUpgrade
         uint256 amount,
         bytes calldata data
     ) external payable nonReentrant notPaused {
-        _validateRating(amount);
+        _validateRatingAmount(amount);
         _createUpRating(msg.sender, url, amount, data);
         _processPayment(amount);
     }
 
     /// @notice Creates an UP rating for a single URL by swapping the target token for the payment token
-    /// @param url The url of the market
+    /// @param url The URL to rate
     /// @param amount The amount of tokens to rate
     /// @param swapParams The parameters for the swap
     /// @param data Optional data to be emitted with the rating
     function createUpRatingSwap(
         string calldata url,
         uint256 amount,
-        SwapParamsMultihop calldata swapParams,
+        SwapParams calldata swapParams,
         bytes calldata data
     ) external payable nonReentrant notPaused {
-        _validateRating(amount);
+        _validateRatingAmount(amount);
         _createUpRating(msg.sender, url, amount, data);
         _processPaymentSwap(amount, swapParams);
     }
 
-    /// @notice Creates a down rating for a single market
-    /// @param url The url of the market
+    /// @notice Creates a down rating for a single URL
+    /// @param url The URL to rate
     /// @param amount The amount of tokens to rate
     /// @param data Optional data to be emitted with the rating
     function createDownRating(
@@ -206,53 +220,55 @@ contract ImmutableRatings is Initializable, UUPSUpgradeable, Ownable2StepUpgrade
         uint256 amount,
         bytes calldata data
     ) external payable nonReentrant notPaused {
-        _validateRating(amount);
+        _validateRatingAmount(amount);
         _createDownRating(msg.sender, url, amount, data);
         _processPayment(amount);
     }
 
-    /// @notice Creates a down rating for a single market by swapping the target token for the payment token
-    /// @param url The url of the market
+    /// @notice Creates a down rating for a single URL by swapping the target token for the payment token
+    /// @param url The URL to rate
     /// @param amount The amount of tokens to rate
     /// @param swapParams The parameters for the swap
     /// @param data Optional data to be emitted with the rating
     function createDownRatingSwap(
         string calldata url,
         uint256 amount,
-        SwapParamsMultihop calldata swapParams,
+        SwapParams calldata swapParams,
         bytes calldata data
     ) external payable nonReentrant notPaused {
-        _validateRating(amount);
+        _validateRatingAmount(amount);
         _createDownRating(msg.sender, url, amount, data);
         _processPaymentSwap(amount, swapParams);
     }
 
     /// @dev Creates an UP rating. Does not validate the rating amount or user count.
     /// @param from The address of the user
-    /// @param url The url of the market
+    /// @param url The URL to rate
     /// @param amount The amount of tokens to rate
     /// @param data Optional data to be emitted with the rating
     function _createUpRating(address from, string calldata url, uint256 amount, bytes calldata data) internal {
         address _address = _getUrlAddress(url, from);
         tokenUp.mint(from, _address, amount);
+        _executeHook(_address, url, amount, data);
         emit RatingUpCreated(from, url, amount, data);
     }
 
     /// @dev Creates a DOWN rating. Does not validate the rating amount or user count.
     /// @param from The address of the user
-    /// @param url The url of the market
+    /// @param url The URL to rate
     /// @param amount The amount of tokens to rate
     /// @param data Optional data to be emitted with the rating
     function _createDownRating(address from, string calldata url, uint256 amount, bytes calldata data) internal {
         address _address = _getUrlAddress(url, from);
         tokenDown.mint(from, _address, amount);
+        _executeHook(_address, url, amount, data);
         emit RatingDownCreated(from, url, amount, data);
     }
 
     /// @dev Gets the address of a URL from the Immutable Mapping contract or creates a new one if it doesn't exist
-    /// @param url The url of the market
+    /// @param url The URL to rate
     /// @param from The address of the user
-    /// @return marketAddress The address of the market
+    /// @return mappingAddress The address of the URL
     function _getUrlAddress(string calldata url, address from) internal returns (address) {
         return immutableMapping.safeCreateMappingFor(url, from);
     }
@@ -261,9 +277,22 @@ contract ImmutableRatings is Initializable, UUPSUpgradeable, Ownable2StepUpgrade
     ///  - Amount is not 0
     ///  - Amount is a multiple of 1 ether (prevents decimal ratings)
     /// @param amount The amount of tokens to rate
-    function _validateRating(uint256 amount) internal pure {
+    function _validateRatingAmount(uint256 amount) internal pure {
         if (amount % 1 ether != 0) {
             revert InvalidRatingAmount();
+        }
+    }
+
+    /// @dev Executes an external hook function if configured for the URL address
+    /// @param _address The onchain address of the URL
+    /// @param url The URL to rate
+    /// @param amount The amount of tokens to rate
+    /// @param data Optional data to be emitted with the rating
+    function _executeHook(address _address, string calldata url, uint256 amount, bytes calldata data) internal {
+        IRatingHook hook = hooks[_address];
+        if (address(hook) != address(0)) {
+            bool isAllowed = hook.execute(url, amount, msg.sender, data);
+            if (!isAllowed) revert RatingNotAllowed();
         }
     }
 
@@ -298,7 +327,7 @@ contract ImmutableRatings is Initializable, UUPSUpgradeable, Ownable2StepUpgrade
     /// @dev Processes the payment for a rating, including funds distribution and excess refund using a multihop swap
     /// @param amount The amount of tokens to rate
     /// @param swapParams The parameters for the swap
-    function _processPaymentSwap(uint256 amount, SwapParamsMultihop calldata swapParams) internal {
+    function _processPaymentSwap(uint256 amount, SwapParams calldata swapParams) internal {
         uint256 price = _getRatingPrice(amount);
 
         if (paymentToken == address(0)) {
@@ -343,10 +372,7 @@ contract ImmutableRatings is Initializable, UUPSUpgradeable, Ownable2StepUpgrade
     /// @dev Execute a UniSwap exact output multihop swap into the payment token
     /// @param amountOut The amount of tokens to receive
     /// @param swapParams The parameters for the swap
-    function _executeSwap(
-        uint256 amountOut,
-        SwapParamsMultihop calldata swapParams
-    ) internal returns (uint256 amountIn) {
+    function _executeSwap(uint256 amountOut, SwapParams calldata swapParams) internal returns (uint256 amountIn) {
         _validatePath(swapParams);
         if (swapParams.token != address(0)) {
             TransferHelper.safeTransferFrom(swapParams.token, msg.sender, address(this), swapParams.amountInMaximum);
@@ -380,7 +406,7 @@ contract ImmutableRatings is Initializable, UUPSUpgradeable, Ownable2StepUpgrade
 
     /// @dev Validates the path of a swap
     /// @param swapParams The parameters for the swap
-    function _validatePath(SwapParamsMultihop calldata swapParams) internal view {
+    function _validatePath(SwapParams calldata swapParams) internal view {
         address destination = _toAddress(swapParams.path, 0);
         address destinationTarget = paymentToken == address(0) ? address(weth) : paymentToken;
         if (destination != destinationTarget) {
@@ -414,12 +440,12 @@ contract ImmutableRatings is Initializable, UUPSUpgradeable, Ownable2StepUpgrade
     /// @notice Recovers ERC20 tokens from the contract
     /// @param tokenAddress The address of the token to recover
     /// @param recipient The address of the recipient
-    function recoverERC20(address tokenAddress, address recipient) external onlyOwner {
+    function recoverERC20(address tokenAddress, address recipient) external onlyRole(OPERATOR_ROLE) {
         if (tokenAddress == address(0) || recipient == address(0)) revert ZeroAddress();
         TransferHelper.safeTransfer(tokenAddress, recipient, IERC20(tokenAddress).balanceOf(address(this)));
     }
 
-    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+    function _authorizeUpgrade(address newImplementation) internal override onlyRole(UPGRADER_ROLE) {}
 
     receive() external payable {}
 }

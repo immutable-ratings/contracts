@@ -18,6 +18,9 @@ import {
   ImmutableMapping__factory,
   ImmutableRatings,
   ImmutableRatings__factory,
+  MockHookFailure,
+  MockHookSuccess,
+  StateChangeHook,
   TDN,
   TUP,
 } from "../../types";
@@ -78,6 +81,8 @@ describe("Immutable Ratings", () => {
     ]);
     await immutableRatings.waitForDeployment();
 
+    await immutableRatings.grantRole(await immutableRatings.OPERATOR_ROLE(), deployer.address);
+
     await tup.grantRole(await tup.MINTER_ROLE(), immutableRatings.target);
     await tdn.grantRole(await tdn.MINTER_ROLE(), immutableRatings.target);
 
@@ -123,7 +128,8 @@ describe("Immutable Ratings", () => {
       expect(await immutableRatings.receiver()).to.equal(receiver.address);
       expect(await immutableRatings.paymentToken()).to.equal(usdc.target);
       expect(await immutableRatings.ratingPrice()).to.equal(price);
-      expect(await immutableRatings.owner()).to.equal(deployer.address);
+      expect(await immutableRatings.isPaused()).to.be.false;
+      expect(await immutableRatings.hasRole(await immutableRatings.DEFAULT_ADMIN_ROLE(), deployer.address)).to.be.true;
 
       // Check has minter roles
       expect(await tdn.hasRole(await tdn.MINTER_ROLE(), immutableRatings.target)).to.be.true;
@@ -352,7 +358,7 @@ describe("Immutable Ratings", () => {
     });
 
     describe("createUpRatingSwap", () => {
-      const swapParams: ImmutableRatings.SwapParamsMultihopStruct = {
+      const swapParams: ImmutableRatings.SwapParamsStruct = {
         token: tokens.degen.address,
         path: solidityPacked(["address", "uint24", "address"], [tokens.usdc.address, 10000, tokens.degen.address]),
         amountInMaximum: parseDegen("100"),
@@ -374,7 +380,7 @@ describe("Immutable Ratings", () => {
       });
 
       it("should swap a native token", async () => {
-        const swapParams: ImmutableRatings.SwapParamsMultihopStruct = {
+        const swapParams: ImmutableRatings.SwapParamsStruct = {
           token: ZeroAddress,
           path: solidityPacked(["address", "uint24", "address"], [tokens.usdc.address, 500, weth]),
           amountInMaximum: parseEther("1.0"),
@@ -389,7 +395,7 @@ describe("Immutable Ratings", () => {
     });
 
     describe("createDownRatingSwap", () => {
-      const swapParams: ImmutableRatings.SwapParamsMultihopStruct = {
+      const swapParams: ImmutableRatings.SwapParamsStruct = {
         token: tokens.degen.address,
         path: solidityPacked(["address", "uint24", "address"], [tokens.usdc.address, 10000, tokens.degen.address]),
         amountInMaximum: parseDegen("100"),
@@ -417,10 +423,10 @@ describe("Immutable Ratings", () => {
         expect(await immutableRatings.receiver()).to.equal(receiver.address);
       });
 
-      it("should revert if not the owner", async () => {
+      it("should revert if not the operator", async () => {
         await expect(immutableRatings.connect(receiver).setReceiver(receiver.address)).to.be.revertedWithCustomError(
           immutableRatings,
-          "OwnableUnauthorizedAccount",
+          "AccessControlUnauthorizedAccount",
         );
       });
 
@@ -451,26 +457,16 @@ describe("Immutable Ratings", () => {
         expect(await immutableRatings.isPaused()).to.equal(false);
       });
 
-      it("should revert if not the owner", async () => {
+      it("should revert if not the operator", async () => {
         await expect(immutableRatings.connect(receiver).setIsPaused(true)).to.be.revertedWithCustomError(
           immutableRatings,
-          "OwnableUnauthorizedAccount",
+          "AccessControlUnauthorizedAccount",
         );
       });
 
       it("should emit Paused event", async () => {
         await expect(immutableRatings.setIsPaused(true)).to.emit(immutableRatings, "Paused").withArgs(true);
         await expect(immutableRatings.setIsPaused(false)).to.emit(immutableRatings, "Paused").withArgs(false);
-      });
-    });
-
-    describe("Transfer Ownership", () => {
-      it("should transfer ownership", async () => {
-        expect(await immutableRatings.owner()).to.equal(deployer.address);
-        await immutableRatings.transferOwnership(receiver.address);
-        expect(await immutableRatings.pendingOwner()).to.equal(receiver.address);
-        await immutableRatings.connect(receiver).acceptOwnership();
-        expect(await immutableRatings.owner()).to.equal(receiver.address);
       });
     });
 
@@ -502,10 +498,10 @@ describe("Immutable Ratings", () => {
         );
       });
 
-      it("should revert if not the owner", async () => {
+      it("should revert if not the operator", async () => {
         await expect(
           immutableRatings.connect(receiver).recoverERC20(tup.target, deployer.address),
-        ).to.be.revertedWithCustomError(immutableRatings, "OwnableUnauthorizedAccount");
+        ).to.be.revertedWithCustomError(immutableRatings, "AccessControlUnauthorizedAccount");
       });
     });
 
@@ -516,10 +512,10 @@ describe("Immutable Ratings", () => {
         expect(await immutableRatings.paymentToken()).to.equal(degen.target);
       });
 
-      it("should revert if not the owner", async () => {
+      it("should revert if not the operator", async () => {
         await expect(immutableRatings.connect(receiver).setPaymentToken(usdc.target)).to.be.revertedWithCustomError(
           immutableRatings,
-          "OwnableUnauthorizedAccount",
+          "AccessControlUnauthorizedAccount",
         );
       });
 
@@ -537,10 +533,10 @@ describe("Immutable Ratings", () => {
         expect(await immutableRatings.ratingPrice()).to.equal(parseUsdc("0.00007"));
       });
 
-      it("should revert if not the owner", async () => {
+      it("should revert if not the operator", async () => {
         await expect(
           immutableRatings.connect(receiver).setRatingPrice(parseUsdc("0.00007")),
-        ).to.be.revertedWithCustomError(immutableRatings, "OwnableUnauthorizedAccount");
+        ).to.be.revertedWithCustomError(immutableRatings, "AccessControlUnauthorizedAccount");
       });
 
       it("should emit RatingPriceUpdated event", async () => {
@@ -617,7 +613,7 @@ describe("Immutable Ratings", () => {
     });
 
     describe("createUpRatingSwap", () => {
-      const swapParams: ImmutableRatings.SwapParamsMultihopStruct = {
+      const swapParams: ImmutableRatings.SwapParamsStruct = {
         token: tokens.usdc.address,
         path: solidityPacked(["address", "uint24", "address"], [weth, 500, tokens.usdc.address]),
         amountInMaximum: parseUsdc("1000"),
@@ -641,7 +637,7 @@ describe("Immutable Ratings", () => {
     });
 
     describe("createDownRatingSwap", () => {
-      const swapParams: ImmutableRatings.SwapParamsMultihopStruct = {
+      const swapParams: ImmutableRatings.SwapParamsStruct = {
         token: tokens.usdc.address,
         path: solidityPacked(["address", "uint24", "address"], [weth, 500, tokens.usdc.address]),
         amountInMaximum: parseUsdc("1000"),
@@ -662,6 +658,67 @@ describe("Immutable Ratings", () => {
           "STF",
         );
       });
+    });
+  });
+
+  describe.only("Hooks", () => {
+    let successHook: MockHookSuccess;
+    let failureHook: MockHookFailure;
+    let stateChangeHook: StateChangeHook;
+
+    const url = "https://www.example.com";
+    const amount = parseEther("1000");
+    const payment = parseUsdc("0.1");
+    let _address: string;
+
+    beforeEach(async () => {
+      await usdc.approve(immutableRatings.target, payment);
+      _address = await mapping.previewAddress(url);
+    });
+
+    beforeEach(async () => {
+      successHook = await ethers.deployContract("MockHookSuccess");
+      failureHook = await ethers.deployContract("MockHookFailure");
+      stateChangeHook = await ethers.deployContract("StateChangeHook");
+
+      await immutableRatings.grantRole(await immutableRatings.HOOK_OPERATOR_ROLE(), deployer.address);
+    });
+
+    it("should revert if not a hook operator", async () => {
+      await expect(
+        immutableRatings.connect(receiver).setHook(deployer.address, successHook),
+      ).to.be.revertedWithCustomError(immutableRatings, "AccessControlUnauthorizedAccount");
+    });
+
+    it("should allow setting a hook as a hook operator", async () => {
+      await immutableRatings.setHook(deployer.address, successHook);
+      expect(await immutableRatings.hooks(deployer.address)).to.equal(successHook.target);
+    });
+
+    it("should allow removing a hook as an operator", async () => {
+      await immutableRatings.setHook(deployer.address, ZeroAddress);
+      expect(await immutableRatings.hooks(deployer.address)).to.equal(ZeroAddress);
+    });
+
+    it("should allow rating if the hook succeeds", async () => {
+      await immutableRatings.setHook(_address, successHook.target);
+      await immutableRatings.createUpRating(url, amount, data);
+      expect(await immutableRatings.getUserRatings(deployer.address)).to.equal(amount);
+    });
+
+    it("should revert if the hook fails", async () => {
+      await immutableRatings.setHook(_address, failureHook.target);
+      await expect(immutableRatings.createUpRating(url, amount, data)).to.be.revertedWithCustomError(
+        immutableRatings,
+        "RatingNotAllowed",
+      );
+    });
+
+    it("should execute a state changing hook", async () => {
+      await immutableRatings.setHook(_address, stateChangeHook.target);
+      expect(await stateChangeHook.counter()).to.equal(0);
+      await immutableRatings.createUpRating(url, amount, data);
+      expect(await stateChangeHook.counter()).to.equal(1);
     });
   });
 });
