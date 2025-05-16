@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {Ownable, Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
@@ -13,26 +14,24 @@ import {ImmutableMapping} from "./ImmutableMapping.sol";
 import {TUP} from "../TUP.sol";
 import {TDN} from "../TDN.sol";
 
-import "hardhat/console.sol";
-
 /// @title Immutable Ratings
 /// @author immutable-ratings
 /// @notice Core controller contract for the Immutable Ratings platform
-contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
+contract ImmutableRatings is Initializable, UUPSUpgradeable, Ownable2StepUpgradeable, ReentrancyGuardUpgradeable {
     /// @dev The TUP token. Represents upvotes.
-    TUP public immutable tokenUp;
+    TUP public tokenUp;
 
     /// @dev The TDN token. Represents downvotes.
-    TDN public immutable tokenDown;
+    TDN public tokenDown;
 
     /// @dev The identity mapping contract
-    ImmutableMapping public immutable immutableMapping;
+    ImmutableMapping public immutableMapping;
 
     /// @dev The Uniswap V3 swap router
-    IV3SwapRouter public immutable swapRouter;
+    IV3SwapRouter public swapRouter;
 
     /// @dev The WETH9 token as per the swap router implementation
-    IWETH public immutable weth;
+    IWETH public weth;
 
     /// @dev This contract is immutable and non-upgradeable.
     /// Further versions of this contract will be deployed independently.
@@ -48,7 +47,10 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
     address public receiver;
 
     /// @dev Whether the contract is paused
-    bool public isPaused = false;
+    bool public isPaused;
+
+    /// @dev Defines storage gap for future upgrades
+    uint256[50] private __gap;
 
     struct SwapParamsSingle {
         address token;
@@ -92,7 +94,7 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
     /// @param _swapRouter The Uniswap V3 Swap Router address
     /// @param _paymentToken The address of the payment token. Zero address for Native Token
     /// @param _ratingPrice The price of a rating in wei
-    constructor(
+    function initialize(
         address _tokenUp,
         address _tokenDown,
         address _mapping,
@@ -100,7 +102,12 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
         address _swapRouter,
         address _paymentToken,
         uint256 _ratingPrice
-    ) Ownable(msg.sender) {
+    ) public initializer {
+        __Ownable2Step_init();
+        __Ownable_init(msg.sender);
+        __ReentrancyGuard_init();
+        __UUPSUpgradeable_init();
+
         if (
             _tokenUp == address(0) ||
             _tokenDown == address(0) ||
@@ -117,6 +124,12 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
         ratingPrice = _ratingPrice;
         swapRouter = IV3SwapRouter(_swapRouter);
         weth = IWETH(swapRouter.WETH9());
+        isPaused = false;
+    }
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
     }
 
     /// @notice Returns the total number of immutables ratings (IRs) for a user
@@ -327,15 +340,6 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
         }
     }
 
-    function _checkPool(address tokenIn, address tokenOut, uint24 fee) internal view {
-        address pool = IUniswapV3Factory(0x33128a8fC17869897dcE68Ed026d694621f6FDfD).getPool(tokenIn, tokenOut, fee);
-        console.log("pool", pool);
-        console.log("tokenIn", tokenIn);
-
-        console.log("tokenInbalance", IERC20(tokenIn).balanceOf(pool));
-        console.log("tokenOutbalance", IERC20(tokenOut).balanceOf(pool));
-    }
-
     /// @dev Execute a UniSwap exact output multihop swap into the payment token
     /// @param amountOut The amount of tokens to receive
     /// @param swapParams The parameters for the swap
@@ -414,6 +418,8 @@ contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
         if (tokenAddress == address(0) || recipient == address(0)) revert ZeroAddress();
         TransferHelper.safeTransfer(tokenAddress, recipient, IERC20(tokenAddress).balanceOf(address(this)));
     }
+
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
     receive() external payable {}
 }

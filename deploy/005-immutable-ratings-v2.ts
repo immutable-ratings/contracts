@@ -1,4 +1,5 @@
 import assert from "assert";
+import { upgrades } from "hardhat";
 import { type DeployFunction } from "hardhat-deploy/types";
 
 import { getConfig } from "../deployments";
@@ -22,16 +23,21 @@ const deploy: DeployFunction = async (hre) => {
   const tdn = await deployments.get("TDN");
   const immutableMapping = await deployments.get("ImmutableMapping");
 
-  const { address } = await deploy(contractName, {
-    from: deployer,
-    args: [tup.address, tdn.address, immutableMapping.address, receiver, swapRouter, paymentToken, ratingPrice],
-    log: true,
-    skipIfAlreadyDeployed: false,
-  });
+  const contractFactory = await hre.ethers.getContractFactory(contractName);
+
+  const contract = await upgrades.deployProxy(
+    contractFactory,
+    [tup.address, tdn.address, immutableMapping.address, receiver, swapRouter, paymentToken, ratingPrice],
+    {
+      initializer: "initialize",
+    },
+  );
+  await contract.waitForDeployment();
+  const address = await contract.getAddress();
 
   console.log(`Deployed contract: ${contractName}, network: ${hre.network.name}, address: ${address}`);
 };
 
-deploy.tags = [contractName];
+deploy.tags = [`${contractName}V2`];
 
 export default deploy;

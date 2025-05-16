@@ -9,7 +9,7 @@ import { SWAP_ROUTER_02_ADDRESSES, WETH9 } from "@uniswap/sdk-core";
 import { expect } from "chai";
 import { AbiCoder, MaxInt256, ZeroAddress, parseEther, solidityPacked } from "ethers";
 import { providers } from "ethers5";
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 
 import {
   ERC20,
@@ -66,7 +66,8 @@ describe("Immutable Ratings", () => {
     degen = ERC20__factory.connect(tokens.degen.address, deployer);
 
     immutableRatingsFactory = await ethers.getContractFactory("ImmutableRatings");
-    immutableRatings = await immutableRatingsFactory.deploy(
+
+    immutableRatings = await upgrades.deployProxy(immutableRatingsFactory, [
       tup.target,
       tdn.target,
       mapping.target,
@@ -74,7 +75,7 @@ describe("Immutable Ratings", () => {
       swapRouter,
       usdc.target,
       price,
-    );
+    ]);
     await immutableRatings.waitForDeployment();
 
     await tup.grantRole(await tup.MINTER_ROLE(), immutableRatings.target);
@@ -131,7 +132,7 @@ describe("Immutable Ratings", () => {
 
     it("should revert if the tup is the zero address", async () => {
       await expect(
-        immutableRatingsFactory.deploy(
+        upgrades.deployProxy(immutableRatingsFactory, [
           ethers.ZeroAddress,
           tdn.target,
           mapping.target,
@@ -139,13 +140,13 @@ describe("Immutable Ratings", () => {
           swapRouter,
           usdc.target,
           price,
-        ),
+        ]),
       ).to.be.revertedWithCustomError(immutableRatingsFactory, "ZeroAddress");
     });
 
     it("should revert if the tdn is the zero address", async () => {
       await expect(
-        immutableRatingsFactory.deploy(
+        upgrades.deployProxy(immutableRatingsFactory, [
           tup.target,
           ethers.ZeroAddress,
           mapping.target,
@@ -153,13 +154,13 @@ describe("Immutable Ratings", () => {
           swapRouter,
           usdc.target,
           price,
-        ),
+        ]),
       ).to.be.revertedWithCustomError(immutableRatingsFactory, "ZeroAddress");
     });
 
     it("should revert if the mapping is the zero address", async () => {
       await expect(
-        immutableRatingsFactory.deploy(
+        upgrades.deployProxy(immutableRatingsFactory, [
           tup.target,
           tdn.target,
           ethers.ZeroAddress,
@@ -167,13 +168,13 @@ describe("Immutable Ratings", () => {
           swapRouter,
           usdc.target,
           price,
-        ),
+        ]),
       ).to.be.revertedWithCustomError(immutableRatingsFactory, "ZeroAddress");
     });
 
     it("should revert if the receiver is the zero address", async () => {
       await expect(
-        immutableRatingsFactory.deploy(
+        upgrades.deployProxy(immutableRatingsFactory, [
           tup.target,
           tdn.target,
           mapping.target,
@@ -181,13 +182,13 @@ describe("Immutable Ratings", () => {
           swapRouter,
           usdc.target,
           price,
-        ),
+        ]),
       ).to.be.revertedWithCustomError(immutableRatingsFactory, "ZeroAddress");
     });
 
     it("should revert if the swap router is the zero address", async () => {
       await expect(
-        immutableRatingsFactory.deploy(
+        upgrades.deployProxy(immutableRatingsFactory, [
           tup.target,
           tdn.target,
           mapping.target,
@@ -195,12 +196,12 @@ describe("Immutable Ratings", () => {
           ethers.ZeroAddress,
           usdc.target,
           price,
-        ),
+        ]),
       ).to.be.revertedWithCustomError(immutableRatingsFactory, "ZeroAddress");
     });
 
     it("should allow a zero payment token (native token)", async () => {
-      const nativeIR = await immutableRatingsFactory.deploy(
+      const nativeIR = await upgrades.deployProxy(immutableRatingsFactory, [
         tup.target,
         tdn.target,
         mapping.target,
@@ -208,7 +209,7 @@ describe("Immutable Ratings", () => {
         swapRouter,
         ethers.ZeroAddress,
         price,
-      );
+      ]);
       await nativeIR.waitForDeployment();
 
       expect(await nativeIR.paymentToken()).to.equal(ethers.ZeroAddress);
@@ -560,7 +561,7 @@ describe("Immutable Ratings", () => {
     const value = parseEther("0.01");
 
     beforeEach(async () => {
-      nativeImmutableRatings = await immutableRatingsFactory.deploy(
+      nativeImmutableRatings = await upgrades.deployProxy(immutableRatingsFactory, [
         tup.target,
         tdn.target,
         mapping.target,
@@ -568,7 +569,7 @@ describe("Immutable Ratings", () => {
         swapRouter,
         ethers.ZeroAddress,
         nativePrice,
-      );
+      ]);
       await nativeImmutableRatings.waitForDeployment();
 
       await tup.grantRole(await tup.MINTER_ROLE(), nativeImmutableRatings.target);
