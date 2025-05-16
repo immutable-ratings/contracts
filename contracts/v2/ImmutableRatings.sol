@@ -9,7 +9,7 @@ import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
 import {IV3SwapRouter} from "./interfaces/IV3SwapRouter.sol";
 import {IWETH} from "./interfaces/IWETH.sol";
-import {IRatingHook} from "./hooks/IRatingHook.sol";
+import {IRatingHook} from "./interfaces/IRatingHook.sol";
 import {ImmutableMapping} from "./ImmutableMapping.sol";
 import {TUP} from "../TUP.sol";
 import {TDN} from "../TDN.sol";

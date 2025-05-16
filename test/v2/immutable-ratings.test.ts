@@ -288,6 +288,16 @@ describe("Immutable Ratings", () => {
         "ContractPaused",
       );
     });
+
+    it("should revert on reentrancy", async () => {
+      const hook = await ethers.deployContract("ReentrancyHook", [immutableRatings.target]);
+      await immutableRatings.grantRole(await immutableRatings.HOOK_OPERATOR_ROLE(), deployer.address);
+      await immutableRatings.setHook(_address, hook.target);
+      await expect(immutableRatings.createUpRating(url, amount, data)).to.be.revertedWithCustomError(
+        immutableRatings,
+        "ReentrancyGuardReentrantCall",
+      );
+    });
   });
 
   describe("createDownRating", () => {
@@ -346,6 +356,16 @@ describe("Immutable Ratings", () => {
         "ContractPaused",
       );
     });
+
+    it("should revert on reentrancy", async () => {
+      const hook = await ethers.deployContract("ReentrancyHook", [immutableRatings.target]);
+      await immutableRatings.grantRole(await immutableRatings.HOOK_OPERATOR_ROLE(), deployer.address);
+      await immutableRatings.setHook(_address, hook.target);
+      await expect(immutableRatings.createDownRating(url, amount, data)).to.be.revertedWithCustomError(
+        immutableRatings,
+        "ReentrancyGuardReentrantCall",
+      );
+    });
   });
 
   describe("swaps", () => {
@@ -392,8 +412,17 @@ describe("Immutable Ratings", () => {
         ).changeTokenBalances(usdc, [receiver.address], [parseUsdc("0.1")]);
         const balanceAfter = await ethers.provider.getBalance(deployer.address);
       });
-    });
 
+      it("should revert on reentrancy", async () => {
+        const hook = await ethers.deployContract("ReentrancyHook", [immutableRatings.target]);
+        await immutableRatings.grantRole(await immutableRatings.HOOK_OPERATOR_ROLE(), deployer.address);
+        await immutableRatings.setHook(_address, hook.target);
+        await expect(immutableRatings.createUpRatingSwap(url, amount, swapParams, data)).to.be.revertedWithCustomError(
+          immutableRatings,
+          "ReentrancyGuardReentrantCall",
+        );
+      });
+    });
     describe("createDownRatingSwap", () => {
       const swapParams: ImmutableRatings.SwapParamsStruct = {
         token: tokens.degen.address,
@@ -414,6 +443,15 @@ describe("Immutable Ratings", () => {
       it("should revert if insufficient payment", async () => {
         await usdc.transfer(receiver.address, await usdc.balanceOf(deployer.address));
         await expect(immutableRatings.createDownRatingSwap(url, amount, swapParams, data)).to.be.revertedWith("STF");
+      });
+
+      it("should revert on reentrancy", async () => {
+        const hook = await ethers.deployContract("ReentrancyHook", [immutableRatings.target]);
+        await immutableRatings.grantRole(await immutableRatings.HOOK_OPERATOR_ROLE(), deployer.address);
+        await immutableRatings.setHook(_address, hook.target);
+        await expect(
+          immutableRatings.createDownRatingSwap(url, amount, swapParams, data),
+        ).to.be.revertedWithCustomError(immutableRatings, "ReentrancyGuardReentrantCall");
       });
     });
 
@@ -661,7 +699,7 @@ describe("Immutable Ratings", () => {
     });
   });
 
-  describe.only("Hooks", () => {
+  describe("Hooks", () => {
     let successHook: MockHookSuccess;
     let failureHook: MockHookFailure;
     let stateChangeHook: StateChangeHook;
@@ -719,6 +757,35 @@ describe("Immutable Ratings", () => {
       expect(await stateChangeHook.counter()).to.equal(0);
       await immutableRatings.createUpRating(url, amount, data);
       expect(await stateChangeHook.counter()).to.equal(1);
+    });
+  });
+
+  describe("Upgrade Test", () => {
+    it("should upgrade the contract", async () => {
+      await immutableRatings.grantRole(await immutableRatings.UPGRADER_ROLE(), deployer.address);
+
+      const factory = await ethers.getContractFactory("ImmutableRatingUpgradeTest");
+      await upgrades.upgradeProxy(immutableRatings.target, factory);
+    });
+
+    it("should revert if not the upgrader", async () => {
+      await expect(
+        upgrades.upgradeProxy(immutableRatings.target, immutableRatingsFactory),
+      ).to.be.revertedWithCustomError(immutableRatings, "AccessControlUnauthorizedAccount");
+    });
+
+    it("should revert if already initialized", async () => {
+      await expect(
+        immutableRatings.initialize(
+          tup.target,
+          tdn.target,
+          mapping.target,
+          receiver.address,
+          swapRouter,
+          usdc.target,
+          price,
+        ),
+      ).to.be.revertedWithCustomError(immutableRatings, "InvalidInitialization");
     });
   });
 });

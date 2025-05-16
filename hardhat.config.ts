@@ -59,8 +59,7 @@ const config: HardhatUserConfig = {
         path: "m/44'/60'/0'/0",
       },
       forking: {
-        // url: `https://base-mainnet.public.blastapi.io`,
-        url: "https://base-mainnet.g.alchemy.com/v2/S27PJBu05du-E99LO2lbpisg2OGnrElJ",
+        url: `https://base-mainnet.public.blastapi.io`,
         blockNumber: 30241554,
       },
       chainId: 31337,
