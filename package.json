@@ -36,6 +36,7 @@
     "@uniswap/smart-order-router": "^4.21.11",
     "@uniswap/v3-core": "^1.0.1",
     "@uniswap/v3-periphery": "^1.4.4",
+    "@uniswap/v3-sdk": "^3.25.2",
     "chai": "^4.3.10",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.7",

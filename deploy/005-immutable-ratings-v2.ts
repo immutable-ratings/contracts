@@ -7,6 +7,7 @@ import { getConfig } from "../deployments";
 const contractName = "ImmutableRatings";
 
 const deploy: DeployFunction = async (hre) => {
+  console.log("Deploying");
   const { getNamedAccounts, deployments } = hre;
 
   const { deploy } = deployments;

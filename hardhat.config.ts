@@ -10,6 +10,7 @@ import "solidity-docgen";
 
 import "./tasks/accounts";
 import "./tasks/configure";
+import "./tasks/pool";
 import "./tasks/verify";
 
 dotenv.config();
@@ -73,6 +74,11 @@ const config: HardhatUserConfig = {
       url: "https://sepolia.base.org",
       accounts,
       chainId: 84532,
+    },
+    sepolia: {
+      url: "https://eth-sepolia.public.blastapi.io",
+      accounts,
+      chainId: 11155111,
     },
   },
   paths: {
