@@ -68,8 +68,20 @@ contract ImmutableRatings is
     }
 
     // Events
-    event RatingUpCreated(address indexed user, string url, uint256 amount, bytes data);
-    event RatingDownCreated(address indexed user, string url, uint256 amount, bytes data);
+    event RatingUpCreated(
+        address indexed user,
+        string indexed url,
+        address indexed _address,
+        uint256 amount,
+        bytes data
+    );
+    event RatingDownCreated(
+        address indexed user,
+        string indexed url,
+        address indexed _address,
+        uint256 amount,
+        bytes data
+    );
     event Paused(bool isPaused);
     event SwapExecuted(address indexed user, uint256 amountIn, uint256 amountOut);
     event ReceiverUpdated(address indexed newReceiver);
@@ -250,7 +262,7 @@ contract ImmutableRatings is
         address _address = _getUrlAddress(url, from);
         tokenUp.mint(from, _address, amount);
         _executeHook(_address, url, amount, data);
-        emit RatingUpCreated(from, url, amount, data);
+        emit RatingUpCreated(from, url, _address, amount, data);
     }
 
     /// @dev Creates a DOWN rating. Does not validate the rating amount or user count.
@@ -262,7 +274,7 @@ contract ImmutableRatings is
         address _address = _getUrlAddress(url, from);
         tokenDown.mint(from, _address, amount);
         _executeHook(_address, url, amount, data);
-        emit RatingDownCreated(from, url, amount, data);
+        emit RatingDownCreated(from, url, _address, amount, data);
     }
 
     /// @dev Gets the address of a URL from the Immutable Mapping contract or creates a new one if it doesn't exist
