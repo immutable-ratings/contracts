@@ -24,12 +24,13 @@ const deploy: DeployFunction = async (hre) => {
   const immutableMapping = await deployments.get("ImmutableMapping");
 
   const contractFactory = await hre.ethers.getContractFactory(contractName);
+  console.log([tup.address, tdn.address, immutableMapping.address, receiver, swapRouter, paymentToken, ratingPrice]);
 
   const contract = await upgrades.deployProxy(
     contractFactory,
     [tup.address, tdn.address, immutableMapping.address, receiver, swapRouter, paymentToken, ratingPrice],
     {
-      initializer: "initialize",
+      verifySourceCode: true,
     },
   );
   await contract.waitForDeployment();
