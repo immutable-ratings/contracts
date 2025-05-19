@@ -2,15 +2,15 @@
   "manifestVersion": "3.2",
   "proxies": [
     {
-      "address": "0xB676A67Af8438FC4cb84d7686b10c26356152C6b",
-      "txHash": "0x093405638ac148afb49e52bbf06be5f5c9dd38218fc7924490a88679cb363fbe",
+      "address": "0xF53224E93497C61E10e701e47b065Ce5032e65EB",
+      "txHash": "0xca0be95cadd77ae5ff323d07ffe527b8a26efef0e34bedcab47681fc25726144",
       "kind": "uups"
     }
   ],
   "impls": {
-    "e1ecbf0e4749d867559b439df636c8bb8f638c665664276d3605d50f1a867951": {
-      "address": "0x06B28E98c96E0601e841Bf4498D183559cd99705",
-      "txHash": "0x403b36de58a9d9a711f8a5703a06fdf114085081e030a5016a4524ef404b81a0",
+    "bebcf05f7f1681227782e53a88a945a96f5a151a5e490650e98b5ae7abdb8b08": {
+      "address": "0x2570e98276B9fFF20A6d68944075a6E78DD26c2d",
+      "txHash": "0x0352b7744873cb20b249b113d4978eb5ca82cc9905d6be4ccd7b8119ebf28b84",
       "layout": {
         "solcVersion": "0.8.22",
         "storage": [
@@ -18,7 +18,7 @@
             "label": "tokenUp",
             "offset": 0,
             "slot": "0",
-            "type": "t_contract(TUP)9702",
+            "type": "t_contract(TUP)9399",
             "contract": "ImmutableRatings",
             "src": "contracts/v2/ImmutableRatings.sol:29"
           },
@@ -26,7 +26,7 @@
             "label": "tokenDown",
             "offset": 0,
             "slot": "1",
-            "type": "t_contract(TDN)9582",
+            "type": "t_contract(TDN)9279",
             "contract": "ImmutableRatings",
             "src": "contracts/v2/ImmutableRatings.sol:32"
           },
@@ -34,7 +34,7 @@
             "label": "immutableMapping",
             "offset": 0,
             "slot": "2",
-            "type": "t_contract(ImmutableMapping)10822",
+            "type": "t_contract(ImmutableMapping)9814",
             "contract": "ImmutableRatings",
             "src": "contracts/v2/ImmutableRatings.sol:35"
           },
@@ -42,7 +42,7 @@
             "label": "swapRouter",
             "offset": 0,
             "slot": "3",
-            "type": "t_contract(IV3SwapRouter)12172",
+            "type": "t_contract(IV3SwapRouter)11170",
             "contract": "ImmutableRatings",
             "src": "contracts/v2/ImmutableRatings.sol:38"
           },
@@ -50,7 +50,7 @@
             "label": "weth",
             "offset": 0,
             "slot": "4",
-            "type": "t_contract(IWETH)12187",
+            "type": "t_contract(IWETH)11185",
             "contract": "ImmutableRatings",
             "src": "contracts/v2/ImmutableRatings.sol:40"
           },
@@ -90,7 +90,7 @@
             "label": "hooks",
             "offset": 0,
             "slot": "8",
-            "type": "t_mapping(t_address,t_contract(IRatingHook)12073)",
+            "type": "t_mapping(t_address,t_contract(IRatingHook)11071)",
             "contract": "ImmutableRatings",
             "src": "contracts/v2/ImmutableRatings.sol:55"
           },
@@ -124,7 +124,7 @@
             "label": "mapping(address => bool)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_struct(AddressSet)3207_storage)": {
+          "t_mapping(t_bytes32,t_struct(AddressSet)3106_storage)": {
             "label": "mapping(bytes32 => struct EnumerableSet.AddressSet)",
             "numberOfBytes": "32"
           },
@@ -141,7 +141,7 @@
             "members": [
               {
                 "label": "_roleMembers",
-                "type": "t_mapping(t_bytes32,t_struct(AddressSet)3207_storage)",
+                "type": "t_mapping(t_bytes32,t_struct(AddressSet)3106_storage)",
                 "offset": 0,
                 "slot": "0"
               }
@@ -160,12 +160,12 @@
             ],
             "numberOfBytes": "32"
           },
-          "t_struct(AddressSet)3207_storage": {
+          "t_struct(AddressSet)3106_storage": {
             "label": "struct EnumerableSet.AddressSet",
             "members": [
               {
                 "label": "_inner",
-                "type": "t_struct(Set)3061_storage",
+                "type": "t_struct(Set)2960_storage",
                 "offset": 0,
                 "slot": "0"
               }
@@ -220,7 +220,7 @@
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(Set)3061_storage": {
+          "t_struct(Set)2960_storage": {
             "label": "struct EnumerableSet.Set",
             "members": [
               {
@@ -250,31 +250,31 @@
             "label": "uint256[50]",
             "numberOfBytes": "1600"
           },
-          "t_contract(IRatingHook)12073": {
+          "t_contract(IRatingHook)11071": {
             "label": "contract IRatingHook",
             "numberOfBytes": "20"
           },
-          "t_contract(IV3SwapRouter)12172": {
+          "t_contract(IV3SwapRouter)11170": {
             "label": "contract IV3SwapRouter",
             "numberOfBytes": "20"
           },
-          "t_contract(IWETH)12187": {
+          "t_contract(IWETH)11185": {
             "label": "contract IWETH",
             "numberOfBytes": "20"
           },
-          "t_contract(ImmutableMapping)10822": {
+          "t_contract(ImmutableMapping)9814": {
             "label": "contract ImmutableMapping",
             "numberOfBytes": "20"
           },
-          "t_contract(TDN)9582": {
+          "t_contract(TDN)9279": {
             "label": "contract TDN",
             "numberOfBytes": "20"
           },
-          "t_contract(TUP)9702": {
+          "t_contract(TUP)9399": {
             "label": "contract TUP",
             "numberOfBytes": "20"
           },
-          "t_mapping(t_address,t_contract(IRatingHook)12073)": {
+          "t_mapping(t_address,t_contract(IRatingHook)11071)": {
             "label": "mapping(address => contract IRatingHook)",
             "numberOfBytes": "32"
           }
@@ -294,7 +294,7 @@
             {
               "contract": "AccessControlEnumerableUpgradeable",
               "label": "_roleMembers",
-              "type": "t_mapping(t_bytes32,t_struct(AddressSet)3207_storage)",
+              "type": "t_mapping(t_bytes32,t_struct(AddressSet)3106_storage)",
               "src": "@openzeppelin/contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol:19",
               "offset": 0,
               "slot": "0"
