@@ -3,7 +3,7 @@ pragma solidity ^0.8.22;
 
 /// @title Immutable Mapping
 /// @author immutable-ratings, GM, EB, MB
-/// @notice Immutable mapping of origins to onchain addresses
+/// @notice Immutable mapping of offchain origins to onchain addresses
 contract ImmutableMapping {
     /// @dev Seed for address mapping derivation
     string public constant SEED = "Immutable_Ratings_by_GM_EB_MB";
@@ -28,6 +28,7 @@ contract ImmutableMapping {
     error ZeroAddress();
 
     /// @notice Creates a new mapping entry for an origin to an address
+    /// @dev If the origin is already mapped, it will revert
     /// @param origin The origin string
     /// @return _address The address of the mapping
     function createMapping(string calldata origin) external returns (address _address) {
@@ -45,8 +46,8 @@ contract ImmutableMapping {
         }
     }
 
-    /// @notice Creates a new mapping entry for an origin to an address if one does not exist,
-    /// else returns the existing address
+    /// @notice Creates a new mapping entry for an origin to an address if one does not exist
+    /// @dev If the origin is already mapped, it will revert
     /// @dev Allows setting the creator address to one other than the caller
     /// @param origin The origin string
     /// @param creator The creator address
@@ -105,6 +106,13 @@ contract ImmutableMapping {
     /// @return isMapped Whether the origin is mapped
     function isOriginMapped(string calldata origin) external view returns (bool isMapped) {
         isMapped = _originToAddress[origin] != address(0);
+    }
+
+    /// @notice Returns whether an address is mapped
+    /// @param _address The address
+    /// @return isMapped Whether the address is mapped
+    function isAddressMapped(address _address) external view returns (bool isMapped) {
+        isMapped = bytes(_addressToOrigin[_address]).length > 0;
     }
 
     /// @notice Returns the address for an origin

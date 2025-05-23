@@ -31,11 +31,12 @@ contract ImmutableRatings is
     /// @dev The TDN token. Represents downvotes.
     TDN public tokenDown;
 
-    /// @dev The identity mapping contract
+    /// @dev The origin to address mapping contract
     ImmutableMapping public immutableMapping;
 
     /// @dev The Uniswap V3 swap router
     IV3SwapRouter public swapRouter;
+
     /// @dev The WETH9 token as per the swap router implementation
     IWETH public weth;
 
@@ -129,7 +130,8 @@ contract ImmutableRatings is
             _tokenDown == address(0) ||
             _mapping == address(0) ||
             _receiver == address(0) ||
-            _swapRouter == address(0)
+            _swapRouter == address(0) ||
+            IV3SwapRouter(_swapRouter).WETH9() == address(0)
         ) revert ZeroAddress();
 
         tokenUp = TUP(_tokenUp);
@@ -183,6 +185,13 @@ contract ImmutableRatings is
     function setRatingPrice(uint256 _ratingPrice) external onlyRole(OPERATOR_ROLE) {
         ratingPrice = _ratingPrice;
         emit RatingPriceUpdated(_ratingPrice);
+    }
+
+    /// @notice Sets the swap router
+    /// @param _swapRouter The address of the swap router
+    function setSwapRouter(address _swapRouter) external onlyRole(OPERATOR_ROLE) {
+        swapRouter = IV3SwapRouter(_swapRouter);
+        weth = IWETH(swapRouter.WETH9());
     }
 
     /// @notice Sets a hook for a specific URL
@@ -312,6 +321,7 @@ contract ImmutableRatings is
     /// @param amount The amount of tokens to rate
     /// @return price The price of the rating
     function previewPayment(uint256 amount) external view returns (uint256) {
+        _validateRatingAmount(amount);
         return _getRatingPrice(amount);
     }
 
@@ -329,7 +339,6 @@ contract ImmutableRatings is
 
         if (paymentToken == address(0)) {
             if (msg.value != price) revert InvalidPayment();
-
             _distributePaymentNative(price);
         } else {
             _distributePaymentErc20(price, msg.sender);
@@ -348,14 +357,6 @@ contract ImmutableRatings is
         } else {
             _executeSwap(price, swapParams);
             _distributePaymentErc20(price, address(this));
-        }
-    }
-
-    /// @dev Refunds excess amount to the caller
-    /// @param amount The amount of tokens to refund
-    function _refundExcessNative(uint256 amount) internal {
-        if (amount > 0) {
-            TransferHelper.safeTransferETH(msg.sender, amount);
         }
     }
 
@@ -416,7 +417,15 @@ contract ImmutableRatings is
         emit SwapExecuted(msg.sender, amountIn, amountOut);
     }
 
-    /// @dev Validates the path of a swap
+    /// @dev Refunds excess amount to the caller
+    /// @param amount The amount of tokens to refund
+    function _refundExcessNative(uint256 amount) internal {
+        if (amount > 0) {
+            TransferHelper.safeTransferETH(msg.sender, amount);
+        }
+    }
+
+    /// @dev Validates the path of a swap, ensuring the in and out tokens are correct
     /// @param swapParams The parameters for the swap
     function _validatePath(SwapParams calldata swapParams) internal view {
         address destination = _toAddress(swapParams.path, 0);
@@ -432,8 +441,7 @@ contract ImmutableRatings is
         }
     }
 
-    /// @dev Converts a bytes array to an address
-    /// Pulled from Uniswap V3 Periphery Libraries
+    /// @dev Converts a bytes array to an address. Pulled from Uniswap V3 Periphery Libraries
     /// @param _bytes The bytes array
     /// @param _start The start index
     /// @return tempAddress The address
@@ -457,6 +465,15 @@ contract ImmutableRatings is
         TransferHelper.safeTransfer(tokenAddress, recipient, IERC20(tokenAddress).balanceOf(address(this)));
     }
 
+    /// @notice Recovers native tokens from the contract
+    /// @param recipient The address of the recipient
+    function recoverNative(address recipient) external onlyRole(OPERATOR_ROLE) {
+        if (recipient == address(0)) revert ZeroAddress();
+        TransferHelper.safeTransferETH(recipient, address(this).balance);
+    }
+
+    /// @dev Authorizes the upgrade of the contract
+    /// @param newImplementation The address of the new implementation
     function _authorizeUpgrade(address newImplementation) internal override onlyRole(UPGRADER_ROLE) {}
 
     receive() external payable {}

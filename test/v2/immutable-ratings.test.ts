@@ -258,7 +258,7 @@ describe("Immutable Ratings", () => {
     it("should emit RatingUpCreated event", async () => {
       await expect(immutableRatings.createUpRating(url, amount, data))
         .to.emit(immutableRatings, "RatingUpCreated")
-        .withArgs(deployer.address, url, amount, data);
+        .withArgs(deployer.address, url, _address, amount, data);
     });
 
     it("should distribute payment to receiver", async () => {
@@ -326,7 +326,7 @@ describe("Immutable Ratings", () => {
     it("should emit RatingDownCreated event", async () => {
       await expect(immutableRatings.createDownRating(url, amount, data))
         .to.emit(immutableRatings, "RatingDownCreated")
-        .withArgs(deployer.address, url, amount, data);
+        .withArgs(deployer.address, url, _address, amount, data);
     });
 
     it("should distribute payment to receiver", async () => {
@@ -472,6 +472,24 @@ describe("Immutable Ratings", () => {
         await expect(immutableRatings.setReceiver(receiver.address))
           .to.emit(immutableRatings, "ReceiverUpdated")
           .withArgs(receiver.address);
+      });
+    });
+
+    describe("Set Swap Router", () => {
+      it("should set the swap router", async () => {
+        const newSwapRouter = await ethers.deployContract("MockSwapRouter");
+        await newSwapRouter.waitForDeployment();
+        await immutableRatings.setSwapRouter(newSwapRouter.target);
+        expect(await immutableRatings.swapRouter()).to.equal(newSwapRouter.target);
+        expect(await immutableRatings.weth()).to.equal("0x1234000000000000000000000000000000000000");
+      });
+
+      it("should revert if not the operator", async () => {
+        const newSwapRouter = await ethers.deployContract("MockSwapRouter");
+        await newSwapRouter.waitForDeployment();
+        await expect(
+          immutableRatings.connect(receiver).setSwapRouter(newSwapRouter.target),
+        ).to.be.revertedWithCustomError(immutableRatings, "AccessControlUnauthorizedAccount");
       });
     });
 
@@ -757,6 +775,23 @@ describe("Immutable Ratings", () => {
       expect(await stateChangeHook.counter()).to.equal(0);
       await immutableRatings.createUpRating(url, amount, data);
       expect(await stateChangeHook.counter()).to.equal(1);
+    });
+  });
+
+  describe("Recover Native", () => {
+    it("should recover native tokens", async () => {
+      await setBalance(await immutableRatings.getAddress(), parseEther("1000"));
+      await expect(immutableRatings.recoverNative(deployer.address)).changeEtherBalances(
+        [deployer.address, immutableRatings.target],
+        [parseEther("1000"), -parseEther("1000")],
+      );
+    });
+
+    it("should revert if the recipient is the zero address", async () => {
+      await expect(immutableRatings.recoverNative(ethers.ZeroAddress)).to.be.revertedWithCustomError(
+        immutableRatings,
+        "ZeroAddress",
+      );
     });
   });
 

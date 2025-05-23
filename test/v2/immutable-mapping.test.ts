@@ -135,6 +135,14 @@ describe("Immutable Mapping", () => {
     });
   });
 
+  describe("isAddressMapped", () => {
+    it("should return true if the address is mapped", async () => {
+      expect(await mapping.isAddressMapped(knownIdentity)).to.equal(false);
+      await mapping.createMapping(knownOrigin);
+      expect(await mapping.isAddressMapped(knownIdentity)).to.equal(true);
+    });
+  });
+
   describe("identityOf", () => {
     it("should return the identity for a known origin", async () => {
       await mapping.createMapping(knownOrigin);

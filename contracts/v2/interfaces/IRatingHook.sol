@@ -3,9 +3,9 @@ pragma solidity ^0.8.22;
 
 /// @title IRatingHook
 /// @author immutable-ratings
-/// @notice Interface for rating abstract rating hooks
+/// @notice Interface for abstract rating hooks
 interface IRatingHook {
-    /// @notice Validates a rating
+    /// @notice Executes a post-rating hook
     /// @param url The URL of the rating
     /// @param amount The amount of ratings to be created
     /// @param caller The address of the caller

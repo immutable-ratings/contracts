@@ -10,7 +10,6 @@ import "solidity-docgen";
 
 import "./tasks/accounts";
 import "./tasks/configure";
-import "./tasks/pool";
 import "./tasks/verify";
 
 dotenv.config();
