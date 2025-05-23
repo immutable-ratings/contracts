@@ -1,7 +1,7 @@
 import assert from "assert";
 import { type DeployFunction } from "hardhat-deploy/types";
 
-const contractName = "TUP";
+const contractName = "ImmutableMapping";
 
 const deploy: DeployFunction = async (hre) => {
   const { getNamedAccounts, deployments } = hre;
