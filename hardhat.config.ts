@@ -1,10 +1,12 @@
 import "@nomicfoundation/hardhat-toolbox";
+import "@openzeppelin/hardhat-upgrades";
 import dotenv from "dotenv";
 import { Wallet } from "ethers";
 import "hardhat-deploy";
 import "hardhat-gas-reporter";
 import type { HardhatUserConfig } from "hardhat/config";
 import { vars } from "hardhat/config";
+import "solidity-docgen";
 
 import "./tasks/accounts";
 import "./tasks/configure";
@@ -56,6 +58,10 @@ const config: HardhatUserConfig = {
         mnemonic: Wallet.createRandom().mnemonic?.phrase,
         path: "m/44'/60'/0'/0",
       },
+      forking: {
+        url: `https://base-mainnet.public.blastapi.io`,
+        blockNumber: 30241554,
+      },
       chainId: 31337,
     },
     "base-mainnet": {
@@ -67,6 +73,11 @@ const config: HardhatUserConfig = {
       url: "https://sepolia.base.org",
       accounts,
       chainId: 84532,
+    },
+    sepolia: {
+      url: "https://eth-sepolia.public.blastapi.io",
+      accounts,
+      chainId: 11155111,
     },
   },
   paths: {
@@ -94,6 +105,10 @@ const config: HardhatUserConfig = {
   typechain: {
     outDir: "types",
     target: "ethers-v6",
+  },
+  docgen: {
+    pages: "files",
+    exclude: ["v1"],
   },
 };
 

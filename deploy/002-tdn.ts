@@ -18,7 +18,7 @@ const deploy: DeployFunction = async (hre) => {
     from: deployer,
     args: [],
     log: true,
-    skipIfAlreadyDeployed: false,
+    skipIfAlreadyDeployed: true,
   });
 
   console.log(`Deployed contract: ${contractName}, network: ${hre.network.name}, address: ${address}`);

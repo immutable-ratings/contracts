@@ -4,7 +4,7 @@ import { expect } from "chai";
 import { parseEther } from "ethers";
 import { ethers } from "hardhat";
 
-import { ImmutableRatings, ImmutableRatings__factory, TDN, TUP } from "../types";
+import { ImmutableRatingsV1, ImmutableRatingsV1__factory, TDN, TUP } from "../../types";
 
 interface MarketRatingStruct {
   url: string;
@@ -17,9 +17,9 @@ describe("Immutable Ratings", () => {
 
   let tup: TUP;
   let tdn: TDN;
-  let immutableRatings: ImmutableRatings;
+  let immutableRatings: ImmutableRatingsV1;
 
-  let immutableRatingsFactory: ImmutableRatings__factory;
+  let immutableRatingsFactory: ImmutableRatingsV1__factory;
 
   before(async () => {
     const signers = await ethers.getSigners();
@@ -36,7 +36,7 @@ describe("Immutable Ratings", () => {
     tdn = await tdnFactory.deploy();
     await tdn.waitForDeployment();
 
-    immutableRatingsFactory = await ethers.getContractFactory("ImmutableRatings");
+    immutableRatingsFactory = await ethers.getContractFactory("ImmutableRatingsV1");
     immutableRatings = await immutableRatingsFactory.deploy(tup.target, tdn.target, receiver.address);
     await immutableRatings.waitForDeployment();
 
