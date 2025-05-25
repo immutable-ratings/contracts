@@ -9,13 +9,13 @@ contract ImmutableMapping {
     string public constant SEED = "Immutable_Ratings_by_GM_EB_MB";
 
     /// @dev Internal mapping of address to origin
-    mapping(address _address => string _origin) public _addressToOrigin;
+    mapping(address _address => string _origin) private _addressToOrigin;
 
     /// @dev Internal mapping of origin to address
-    mapping(string _origin => address _address) public _originToAddress;
+    mapping(string _origin => address _address) private _originToAddress;
 
     /// @dev Internal mapping of address to creator
-    mapping(address _address => address _creator) public _addressToCreator;
+    mapping(address _address => address _creator) private _addressToCreator;
 
     // Events
     event OriginMapped(address indexed _address, string indexed _origin, address indexed _creator);

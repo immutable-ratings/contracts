@@ -2,7 +2,7 @@
 
 ## ImmutableMapping
 
-Immutable mapping of origins to onchain addresses
+Immutable mapping of offchain origins to onchain addresses
 
 ### SEED
 
@@ -11,30 +11,6 @@ string SEED
 ```
 
 _Seed for address mapping derivation_
-
-### _addressToOrigin
-
-```solidity
-mapping(address => string) _addressToOrigin
-```
-
-_Internal mapping of address to origin_
-
-### _originToAddress
-
-```solidity
-mapping(string => address) _originToAddress
-```
-
-_Internal mapping of origin to address_
-
-### _addressToCreator
-
-```solidity
-mapping(address => address) _addressToCreator
-```
-
-_Internal mapping of address to creator_
 
 ### OriginMapped
 
@@ -80,11 +56,39 @@ function createMapping(string origin) external returns (address _address)
 
 Creates a new mapping entry for an origin to an address
 
+_If the origin is already mapped, it will revert_
+
 #### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | origin | string | The origin string |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _address | address | The address of the mapping |
+
+### safeCreateMapping
+
+```solidity
+function safeCreateMapping(string origin) external returns (address _address)
+```
+
+Creates a new mapping entry if one does not exist, else returns the existing address
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| origin | string | The origin string |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _address | address | The address of the mapping |
 
 ### createMappingFor
 
@@ -92,7 +96,32 @@ Creates a new mapping entry for an origin to an address
 function createMappingFor(string origin, address creator) external returns (address _address)
 ```
 
-Creates a new mapping entry for an origin to an address
+Creates a new mapping entry for an origin to an address if one does not exist
+
+_If the origin is already mapped, it will revert
+Allows setting the creator address to one other than the caller_
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| origin | string | The origin string |
+| creator | address | The creator address |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _address | address | The address of the mapping |
+
+### safeCreateMappingFor
+
+```solidity
+function safeCreateMappingFor(string origin, address creator) external returns (address _address)
+```
+
+Creates a new mapping entry for an origin to an address if one does not exist,
+else returns the existing address
 
 _Allows setting the creator address to one other than the caller_
 
@@ -103,10 +132,16 @@ _Allows setting the creator address to one other than the caller_
 | origin | string | The origin string |
 | creator | address | The creator address |
 
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _address | address | The address of the mapping |
+
 ### _createMapping
 
 ```solidity
-function _createMapping(string origin) internal returns (address _address)
+function _createMapping(string origin, address creator) internal returns (address _address)
 ```
 
 Creates a new mapping entry for an origin to an address
@@ -116,20 +151,6 @@ Creates a new mapping entry for an origin to an address
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | origin | string | The origin string |
-
-### _setCreator
-
-```solidity
-function _setCreator(address _address, address creator) internal
-```
-
-Sets the creator of a mapping
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| _address | address | The address |
 | creator | address |  |
 
 ### _createDeterministicAddress
@@ -195,6 +216,26 @@ Returns whether an origin is mapped
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | isMapped | bool | Whether the origin is mapped |
+
+### isAddressMapped
+
+```solidity
+function isAddressMapped(address _address) external view returns (bool isMapped)
+```
+
+Returns whether an address is mapped
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _address | address | The address |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| isMapped | bool | Whether the address is mapped |
 
 ### addressOf
 
