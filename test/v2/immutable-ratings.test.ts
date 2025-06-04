@@ -491,6 +491,20 @@ describe("Immutable Ratings", () => {
           immutableRatings.connect(receiver).setSwapRouter(newSwapRouter.target),
         ).to.be.revertedWithCustomError(immutableRatings, "AccessControlUnauthorizedAccount");
       });
+
+      it("should revert if the swap router is the zero address", async () => {
+        await expect(immutableRatings.setSwapRouter(ethers.ZeroAddress)).to.be.revertedWithCustomError(
+          immutableRatings,
+          "ZeroAddress",
+        );
+      });
+
+      it("should revert if the swap router is already set", async () => {
+        await expect(immutableRatings.setSwapRouter(swapRouter)).to.be.revertedWithCustomError(
+          immutableRatings,
+          "AddressAlreadySet",
+        );
+      });
     });
 
     describe("Get User Ratings", () => {

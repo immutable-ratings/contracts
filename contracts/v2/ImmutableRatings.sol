@@ -89,6 +89,7 @@ contract ImmutableRatings is
     event PaymentTokenUpdated(address indexed newPaymentToken);
     event RatingPriceUpdated(uint256 newRatingPrice);
     event HookSet(address indexed _address, IRatingHook hook);
+    event SwapRouterUpdated(address indexed newSwapRouter);
 
     // Errors
     error ZeroAddress();
@@ -98,6 +99,9 @@ contract ImmutableRatings is
     error InvalidSwapPath();
     error OutOfBounds();
     error RatingNotAllowed();
+    error AddressAlreadySet();
+    error InterfaceNotSupported();
+    error InsufficientPayment();
 
     /// @dev Enforces that a function can only be called if the contract is not paused
     modifier notPaused() {
@@ -190,8 +194,12 @@ contract ImmutableRatings is
     /// @notice Sets the swap router
     /// @param _swapRouter The address of the swap router
     function setSwapRouter(address _swapRouter) external onlyRole(OPERATOR_ROLE) {
+        if (_swapRouter == address(0)) revert ZeroAddress();
+        if (IV3SwapRouter(_swapRouter).WETH9() == address(0)) revert ZeroAddress();
+        if (address(swapRouter) == _swapRouter) revert AddressAlreadySet();
         swapRouter = IV3SwapRouter(_swapRouter);
         weth = IWETH(swapRouter.WETH9());
+        emit SwapRouterUpdated(_swapRouter);
     }
 
     /// @notice Sets a hook for a specific URL
@@ -338,7 +346,11 @@ contract ImmutableRatings is
         uint256 price = _getRatingPrice(amount);
 
         if (paymentToken == address(0)) {
-            if (msg.value != price) revert InvalidPayment();
+            if (msg.value < price) revert InsufficientPayment();
+            if (msg.value > price) {
+                uint256 excess = msg.value - price;
+                _refundExcessNative(excess);
+            }
             _distributePaymentNative(price);
         } else {
             _distributePaymentErc20(price, msg.sender);
@@ -411,7 +423,10 @@ contract ImmutableRatings is
         // Refund any excess ETH still held by the router after the swap
         if (swapParams.token == address(0)) {
             swapRouter.refundETH();
-            _refundExcessNative(address(this).balance);
+            uint256 excessAmount = msg.value - amountIn;
+            if (excessAmount > 0) {
+                _refundExcessNative(excessAmount);
+            }
         }
 
         emit SwapExecuted(msg.sender, amountIn, amountOut);
