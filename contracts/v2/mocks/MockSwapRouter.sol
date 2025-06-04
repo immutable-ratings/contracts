@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.22;
+pragma solidity 0.8.29;
 
 contract MockSwapRouter {
     function WETH9() external pure returns (address) {
