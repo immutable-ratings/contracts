@@ -100,8 +100,7 @@ contract ImmutableRatings is
     error OutOfBounds();
     error RatingNotAllowed();
     error AddressAlreadySet();
-    error InterfaceNotSupported();
-    error InsufficientPayment();
+    error InvalidRatingPrice();
 
     /// @dev Enforces that a function can only be called if the contract is not paused
     modifier notPaused() {
@@ -137,6 +136,7 @@ contract ImmutableRatings is
             _swapRouter == address(0) ||
             IV3SwapRouter(_swapRouter).WETH9() == address(0)
         ) revert ZeroAddress();
+        if (_ratingPrice == 0) revert InvalidRatingPrice();
 
         tokenUp = TUP(_tokenUp);
         tokenDown = TDN(_tokenDown);
@@ -166,6 +166,7 @@ contract ImmutableRatings is
     /// @notice Sets the fee receiver address
     /// @param _receiver The address of the fee receiver
     function setReceiver(address _receiver) external onlyRole(OPERATOR_ROLE) {
+        if (_receiver == address(0)) revert ZeroAddress();
         receiver = _receiver;
         emit ReceiverUpdated(_receiver);
     }
@@ -187,6 +188,7 @@ contract ImmutableRatings is
     /// @notice Sets the rating price
     /// @param _ratingPrice The price of a rating in wei
     function setRatingPrice(uint256 _ratingPrice) external onlyRole(OPERATOR_ROLE) {
+        if (_ratingPrice == 0) revert InvalidRatingPrice();
         ratingPrice = _ratingPrice;
         emit RatingPriceUpdated(_ratingPrice);
     }
@@ -220,8 +222,8 @@ contract ImmutableRatings is
         bytes calldata data
     ) external payable nonReentrant notPaused {
         _validateRatingAmount(amount);
-        _createUpRating(msg.sender, url, amount, data);
         _processPayment(amount);
+        _createUpRating(msg.sender, url, amount, data);
     }
 
     /// @notice Creates an UP rating for a single URL by swapping the target token for the payment token
@@ -236,8 +238,8 @@ contract ImmutableRatings is
         bytes calldata data
     ) external payable nonReentrant notPaused {
         _validateRatingAmount(amount);
-        _createUpRating(msg.sender, url, amount, data);
         _processPaymentSwap(amount, swapParams);
+        _createUpRating(msg.sender, url, amount, data);
     }
 
     /// @notice Creates a down rating for a single URL
@@ -250,8 +252,8 @@ contract ImmutableRatings is
         bytes calldata data
     ) external payable nonReentrant notPaused {
         _validateRatingAmount(amount);
-        _createDownRating(msg.sender, url, amount, data);
         _processPayment(amount);
+        _createDownRating(msg.sender, url, amount, data);
     }
 
     /// @notice Creates a down rating for a single URL by swapping the target token for the payment token
@@ -266,8 +268,8 @@ contract ImmutableRatings is
         bytes calldata data
     ) external payable nonReentrant notPaused {
         _validateRatingAmount(amount);
-        _createDownRating(msg.sender, url, amount, data);
         _processPaymentSwap(amount, swapParams);
+        _createDownRating(msg.sender, url, amount, data);
     }
 
     /// @dev Creates an UP rating. Does not validate the rating amount or user count.
@@ -346,7 +348,7 @@ contract ImmutableRatings is
         uint256 price = _getRatingPrice(amount);
 
         if (paymentToken == address(0)) {
-            if (msg.value < price) revert InsufficientPayment();
+            if (msg.value < price) revert InvalidPayment();
             if (msg.value > price) {
                 uint256 excess = msg.value - price;
                 _refundExcessNative(excess);
