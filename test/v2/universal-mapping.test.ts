@@ -3,15 +3,15 @@ import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-import { ImmutableMapping, ImmutableMapping__factory } from "../../types";
+import { UniversalMappingProtocol, UniversalMappingProtocol__factory } from "../../types";
 
-describe("Immutable Mapping", () => {
+describe("Universal Mapping Protocol", () => {
   let deployer: SignerWithAddress;
   let receiver: SignerWithAddress;
   let alice: SignerWithAddress;
 
-  let mapping: ImmutableMapping;
-  let mappingFactory: ImmutableMapping__factory;
+  let mapping: UniversalMappingProtocol;
+  let mappingFactory: UniversalMappingProtocol__factory;
 
   // Example based on the original implementation
   const knownOrigin = "https://www.ratings.wtf";
@@ -25,7 +25,7 @@ describe("Immutable Mapping", () => {
   });
 
   const deploy = async () => {
-    mappingFactory = await ethers.getContractFactory("ImmutableMapping");
+    mappingFactory = await ethers.getContractFactory("UniversalMappingProtocol");
     mapping = await mappingFactory.deploy();
     await mapping.waitForDeployment();
   };

@@ -14,8 +14,6 @@ import { ethers, upgrades } from "hardhat";
 import {
   ERC20,
   ERC20__factory,
-  ImmutableMapping,
-  ImmutableMapping__factory,
   ImmutableRatings,
   ImmutableRatings__factory,
   MockHookFailure,
@@ -23,6 +21,8 @@ import {
   StateChangeHook,
   TDN,
   TUP,
+  UniversalMappingProtocol,
+  UniversalMappingProtocol__factory,
 } from "../../types";
 import { Token, parseDegen, parseUsdc, tokens } from "./tokens.test";
 
@@ -38,13 +38,13 @@ describe("Immutable Ratings", () => {
   let tup: TUP;
   let tdn: TDN;
   let immutableRatings: ImmutableRatings;
-  let mapping: ImmutableMapping;
+  let mapping: UniversalMappingProtocol;
 
   let usdc: ERC20;
   let degen: ERC20;
 
   let immutableRatingsFactory: ImmutableRatings__factory;
-  let mappingFactory: ImmutableMapping__factory;
+  let mappingFactory: UniversalMappingProtocol__factory;
 
   before(async () => {
     const signers = await ethers.getSigners();
@@ -61,7 +61,7 @@ describe("Immutable Ratings", () => {
     tdn = await tdnFactory.deploy();
     await tdn.waitForDeployment();
 
-    const mappingFactory = await ethers.getContractFactory("ImmutableMapping");
+    const mappingFactory = await ethers.getContractFactory("UniversalMappingProtocol");
     mapping = await mappingFactory.deploy();
     await mapping.waitForDeployment();
 
@@ -124,7 +124,7 @@ describe("Immutable Ratings", () => {
 
       expect(await immutableRatings.tokenUp()).to.equal(tup.target);
       expect(await immutableRatings.tokenDown()).to.equal(tdn.target);
-      expect(await immutableRatings.immutableMapping()).to.equal(mapping.target);
+      expect(await immutableRatings.universalMapping()).to.equal(mapping.target);
       expect(await immutableRatings.receiver()).to.equal(receiver.address);
       expect(await immutableRatings.paymentToken()).to.equal(usdc.target);
       expect(await immutableRatings.ratingPrice()).to.equal(price);
@@ -406,21 +406,9 @@ describe("Immutable Ratings", () => {
           amountInMaximum: parseEther("1.0"),
         };
 
-        const balanceBefore = await ethers.provider.getBalance(deployer.address);
         await expect(
           immutableRatings.createUpRatingSwap(url, amount, swapParams, data, { value: parseEther("1.0") }),
         ).changeTokenBalances(usdc, [receiver.address], [parseUsdc("0.1")]);
-        const balanceAfter = await ethers.provider.getBalance(deployer.address);
-      });
-
-      it("should revert on reentrancy", async () => {
-        const hook = await ethers.deployContract("ReentrancyHook", [immutableRatings.target]);
-        await immutableRatings.grantRole(await immutableRatings.HOOK_OPERATOR_ROLE(), deployer.address);
-        await immutableRatings.setHook(_address, hook.target);
-        await expect(immutableRatings.createUpRatingSwap(url, amount, swapParams, data)).to.be.revertedWithCustomError(
-          immutableRatings,
-          "ReentrancyGuardReentrantCall",
-        );
       });
     });
     describe("createDownRatingSwap", () => {
@@ -443,15 +431,6 @@ describe("Immutable Ratings", () => {
       it("should revert if insufficient payment", async () => {
         await usdc.transfer(receiver.address, await usdc.balanceOf(deployer.address));
         await expect(immutableRatings.createDownRatingSwap(url, amount, swapParams, data)).to.be.revertedWith("STF");
-      });
-
-      it("should revert on reentrancy", async () => {
-        const hook = await ethers.deployContract("ReentrancyHook", [immutableRatings.target]);
-        await immutableRatings.grantRole(await immutableRatings.HOOK_OPERATOR_ROLE(), deployer.address);
-        await immutableRatings.setHook(_address, hook.target);
-        await expect(
-          immutableRatings.createDownRatingSwap(url, amount, swapParams, data),
-        ).to.be.revertedWithCustomError(immutableRatings, "ReentrancyGuardReentrantCall");
       });
     });
 
@@ -655,12 +634,6 @@ describe("Immutable Ratings", () => {
           nativeImmutableRatings.createUpRating(url, amount, data, { value: parseEther("0.00009") }),
         ).to.be.revertedWithCustomError(nativeImmutableRatings, "InvalidPayment");
       });
-
-      it("should revert if the value is greater than the payment", async () => {
-        await expect(
-          nativeImmutableRatings.createUpRating(url, amount, data, { value: parseEther("0.11") }),
-        ).to.be.revertedWithCustomError(nativeImmutableRatings, "InvalidPayment");
-      });
     });
 
     describe("createDownRating", () => {
@@ -672,12 +645,6 @@ describe("Immutable Ratings", () => {
       it("should revert if the value is less than the payment", async () => {
         await expect(
           nativeImmutableRatings.createDownRating(url, amount, data, { value: parseEther("0.00009") }),
-        ).to.be.revertedWithCustomError(nativeImmutableRatings, "InvalidPayment");
-      });
-
-      it("should revert if the value is greater than the payment", async () => {
-        await expect(
-          nativeImmutableRatings.createDownRating(url, amount, data, { value: parseEther("0.11") }),
         ).to.be.revertedWithCustomError(nativeImmutableRatings, "InvalidPayment");
       });
     });

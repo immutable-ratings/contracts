@@ -10,7 +10,7 @@ import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 import {IV3SwapRouter} from "./interfaces/IV3SwapRouter.sol";
 import {IWETH} from "./interfaces/IWETH.sol";
 import {IRatingHook} from "./interfaces/IRatingHook.sol";
-import {ImmutableMapping} from "./ImmutableMapping.sol";
+import {UniversalMappingProtocol} from "./UniversalMappingProtocol.sol";
 import {TUP} from "../TUP.sol";
 import {TDN} from "../TDN.sol";
 
@@ -32,7 +32,7 @@ contract ImmutableRatings is
     TDN public tokenDown;
 
     /// @dev The origin to address mapping contract
-    ImmutableMapping public immutableMapping;
+    UniversalMappingProtocol public universalMapping;
 
     /// @dev The Uniswap V3 swap router
     IV3SwapRouter public swapRouter;
@@ -140,7 +140,7 @@ contract ImmutableRatings is
 
         tokenUp = TUP(_tokenUp);
         tokenDown = TDN(_tokenDown);
-        immutableMapping = ImmutableMapping(_mapping);
+        universalMapping = UniversalMappingProtocol(_mapping);
         receiver = _receiver;
         paymentToken = _paymentToken;
         ratingPrice = _ratingPrice;
@@ -301,7 +301,7 @@ contract ImmutableRatings is
     /// @param from The address of the user
     /// @return mappingAddress The address of the URL
     function _getUrlAddress(string calldata url, address from) internal returns (address) {
-        return immutableMapping.safeCreateMappingFor(url, from);
+        return universalMapping.safeCreateMappingFor(url, from);
     }
 
     /// @dev Validates a rating is correctly formatted

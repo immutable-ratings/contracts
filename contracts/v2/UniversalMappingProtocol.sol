@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.29;
 
-/// @title Immutable Mapping
-/// @author immutable-ratings, GM, EB, MB
-/// @notice Immutable mapping of offchain origins to onchain addresses
-contract ImmutableMapping {
+/// @title Universal Mapping Protocol
+/// @author GM, EB, MB
+/// @notice Universal mapping of offchain origins to onchain addresses
+contract UniversalMappingProtocol {
     /// @dev Seed for address mapping derivation
     string public constant SEED = "Immutable_Ratings_by_GM_EB_MB";
 
