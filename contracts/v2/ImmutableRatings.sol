@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/access/extensions/AccessControlEnume
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
-import {IV3SwapRouter} from "./interfaces/IV3SwapRouter.sol";
+import {ISwapRouter02} from "./interfaces/ISwapRouter02.sol";
 import {IWETH} from "./interfaces/IWETH.sol";
 import {IRatingHook} from "./interfaces/IRatingHook.sol";
 import {UniversalMappingProtocol} from "./UniversalMappingProtocol.sol";
@@ -34,8 +34,8 @@ contract ImmutableRatings is
     /// @dev The origin to address mapping contract
     UniversalMappingProtocol public universalMapping;
 
-    /// @dev The Uniswap V3 swap router
-    IV3SwapRouter public swapRouter;
+    /// @dev The Uniswap Swap Router for multihop swaps
+    ISwapRouter02 public swapRouter;
 
     /// @dev The WETH9 token as per the swap router implementation
     IWETH public weth;
@@ -134,7 +134,7 @@ contract ImmutableRatings is
             _mapping == address(0) ||
             _receiver == address(0) ||
             _swapRouter == address(0) ||
-            IV3SwapRouter(_swapRouter).WETH9() == address(0)
+            ISwapRouter02(_swapRouter).WETH9() == address(0)
         ) revert ZeroAddress();
         if (_ratingPrice == 0) revert InvalidRatingPrice();
 
@@ -144,7 +144,7 @@ contract ImmutableRatings is
         receiver = _receiver;
         paymentToken = _paymentToken;
         ratingPrice = _ratingPrice;
-        swapRouter = IV3SwapRouter(_swapRouter);
+        swapRouter = ISwapRouter02(_swapRouter);
         weth = IWETH(swapRouter.WETH9());
         isPaused = false;
 
@@ -197,9 +197,9 @@ contract ImmutableRatings is
     /// @param _swapRouter The address of the swap router
     function setSwapRouter(address _swapRouter) external onlyRole(OPERATOR_ROLE) {
         if (_swapRouter == address(0)) revert ZeroAddress();
-        if (IV3SwapRouter(_swapRouter).WETH9() == address(0)) revert ZeroAddress();
+        if (ISwapRouter02(_swapRouter).WETH9() == address(0)) revert ZeroAddress();
         if (address(swapRouter) == _swapRouter) revert AddressAlreadySet();
-        swapRouter = IV3SwapRouter(_swapRouter);
+        swapRouter = ISwapRouter02(_swapRouter);
         weth = IWETH(swapRouter.WETH9());
         emit SwapRouterUpdated(_swapRouter);
     }
@@ -406,7 +406,7 @@ contract ImmutableRatings is
             TransferHelper.safeApprove(swapParams.token, address(swapRouter), swapParams.amountInMaximum);
         }
 
-        IV3SwapRouter.ExactOutputParams memory params = IV3SwapRouter.ExactOutputParams({
+        ISwapRouter02.ExactOutputParams memory params = ISwapRouter02.ExactOutputParams({
             recipient: address(this),
             amountOut: amountOut,
             amountInMaximum: swapParams.amountInMaximum,

@@ -4,7 +4,7 @@ pragma solidity 0.8.29;
 import "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/IPeripheryPayments.sol";
 
-interface IV3SwapRouter is IUniswapV3SwapCallback, IPeripheryPayments {
+interface ISwapRouter02 is IUniswapV3SwapCallback, IPeripheryPayments {
     struct ExactInputSingleParams {
         address tokenIn;
         address tokenOut;
