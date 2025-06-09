@@ -5,15 +5,15 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Ownable, Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
-import {TUP} from "./TUP.sol";
-import {TDN} from "./TDN.sol";
+import {TUP} from "../TUP.sol";
+import {TDN} from "../TDN.sol";
 
 /**
  * @title Immutable Ratings
  * @author immutable-ratings
  * @notice Core controller contract for the Immutable Ratings platform
  */
-contract ImmutableRatings is Ownable2Step, ReentrancyGuard {
+contract ImmutableRatingsV1 is Ownable2Step, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     /// @dev The TUP token. Represents upvotes.

@@ -3,9 +3,11 @@ import { type DeployFunction } from "hardhat-deploy/types";
 
 import { getConfig } from "../deployments";
 
-const contractName = "ImmutableRatings";
+const contractName = "ImmutableRatingsV1";
 
 const deploy: DeployFunction = async (hre) => {
+  console.log("Deprecated");
+  return;
   const { getNamedAccounts, deployments } = hre;
 
   const { deploy } = deployments;
