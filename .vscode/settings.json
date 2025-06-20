@@ -3,5 +3,7 @@
   "editor.formatOnSave": true,
   "prettier.documentSelectors": ["**/*.sol"],
   "solidity.formatter": "prettier",
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "solidity.defaultCompiler": "localFile",
+  "solidity.compileUsingRemoteVersion": "latest"
 }

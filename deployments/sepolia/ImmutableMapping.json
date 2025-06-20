@@ -1,0 +1,575 @@
+{
+  "address": "0x71FeDAAadA5288968fDdCce0491B361B406b301E",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "name": "AddressNotMapped",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_origin",
+          "type": "string"
+        }
+      ],
+      "name": "AlreadyMapped",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "EmptyOrigin",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_origin",
+          "type": "string"
+        }
+      ],
+      "name": "OriginNotMapped",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroAddress",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "string",
+          "name": "_origin",
+          "type": "string"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_creator",
+          "type": "address"
+        }
+      ],
+      "name": "OriginMapped",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "SEED",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "name": "_addressToCreator",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "_creator",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "name": "_addressToOrigin",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "_origin",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_origin",
+          "type": "string"
+        }
+      ],
+      "name": "_originToAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "origin",
+          "type": "string"
+        }
+      ],
+      "name": "addressOf",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "origin",
+          "type": "string"
+        }
+      ],
+      "name": "createMapping",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "origin",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        }
+      ],
+      "name": "createMappingFor",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "name": "creatorOf",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "origin",
+          "type": "string"
+        }
+      ],
+      "name": "isOriginMapped",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "isMapped",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "origin",
+          "type": "string"
+        }
+      ],
+      "name": "originCreatorOf",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "name": "originOf",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "origin",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "origin",
+          "type": "string"
+        }
+      ],
+      "name": "previewAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "origin",
+          "type": "string"
+        }
+      ],
+      "name": "safeCreateMapping",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "origin",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        }
+      ],
+      "name": "safeCreateMappingFor",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x614ee62b6939406ae1f4bb577c66377c1a298db9b7eb6019162e826b7dd4d3fd",
+  "receipt": {
+    "to": null,
+    "from": "0x4415b58946aF3c33e2D19bD4191BB286Ad7e1C14",
+    "contractAddress": "0x71FeDAAadA5288968fDdCce0491B361B406b301E",
+    "transactionIndex": 90,
+    "gasUsed": "744416",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x3b36b3d7b2fb62a7679ff6fa2f9bdfb84f863e87e0871de67fe30b2a1297ea9b",
+    "transactionHash": "0x614ee62b6939406ae1f4bb577c66377c1a298db9b7eb6019162e826b7dd4d3fd",
+    "logs": [],
+    "blockNumber": 8363844,
+    "cumulativeGasUsed": "12818960",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "2ec11162db5b796ae9d81caefb6d1d66",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.22+commit.4fc1097e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"name\":\"AddressNotMapped\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_origin\",\"type\":\"string\"}],\"name\":\"AlreadyMapped\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"EmptyOrigin\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_origin\",\"type\":\"string\"}],\"name\":\"OriginNotMapped\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroAddress\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"string\",\"name\":\"_origin\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_creator\",\"type\":\"address\"}],\"name\":\"OriginMapped\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"SEED\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"name\":\"_addressToCreator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"_creator\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"name\":\"_addressToOrigin\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"_origin\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_origin\",\"type\":\"string\"}],\"name\":\"_originToAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"origin\",\"type\":\"string\"}],\"name\":\"addressOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"origin\",\"type\":\"string\"}],\"name\":\"createMapping\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"origin\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"}],\"name\":\"createMappingFor\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"name\":\"creatorOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"origin\",\"type\":\"string\"}],\"name\":\"isOriginMapped\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"isMapped\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"origin\",\"type\":\"string\"}],\"name\":\"originCreatorOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"name\":\"originOf\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"origin\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"origin\",\"type\":\"string\"}],\"name\":\"previewAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"origin\",\"type\":\"string\"}],\"name\":\"safeCreateMapping\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"origin\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"}],\"name\":\"safeCreateMappingFor\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"immutable-ratings, GM, EB, MB\",\"kind\":\"dev\",\"methods\":{\"addressOf(string)\":{\"params\":{\"origin\":\"The origin string\"},\"returns\":{\"_address\":\"The address\"}},\"createMapping(string)\":{\"params\":{\"origin\":\"The origin string\"},\"returns\":{\"_address\":\"The address of the mapping\"}},\"createMappingFor(string,address)\":{\"details\":\"Allows setting the creator address to one other than the caller\",\"params\":{\"creator\":\"The creator address\",\"origin\":\"The origin string\"},\"returns\":{\"_address\":\"The address of the mapping\"}},\"creatorOf(address)\":{\"params\":{\"_address\":\"The address\"},\"returns\":{\"creator\":\"The creator address\"}},\"isOriginMapped(string)\":{\"params\":{\"origin\":\"The origin string\"},\"returns\":{\"isMapped\":\"Whether the origin is mapped\"}},\"originCreatorOf(string)\":{\"params\":{\"origin\":\"The origin string\"},\"returns\":{\"creator\":\"The creator address\"}},\"originOf(address)\":{\"params\":{\"_address\":\"The address\"},\"returns\":{\"origin\":\"The origin string\"}},\"previewAddress(string)\":{\"details\":\"Does not require the origin to be mapped.\",\"params\":{\"origin\":\"The origin string\"},\"returns\":{\"_address\":\"The deterministic address\"}},\"safeCreateMapping(string)\":{\"params\":{\"origin\":\"The origin string\"},\"returns\":{\"_address\":\"The address of the mapping\"}},\"safeCreateMappingFor(string,address)\":{\"details\":\"Allows setting the creator address to one other than the caller\",\"params\":{\"creator\":\"The creator address\",\"origin\":\"The origin string\"},\"returns\":{\"_address\":\"The address of the mapping\"}}},\"stateVariables\":{\"SEED\":{\"details\":\"Seed for address mapping derivation\"},\"_addressToCreator\":{\"details\":\"Internal mapping of address to creator\"},\"_addressToOrigin\":{\"details\":\"Internal mapping of address to origin\"},\"_originToAddress\":{\"details\":\"Internal mapping of origin to address\"}},\"title\":\"Immutable Mapping\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"addressOf(string)\":{\"notice\":\"Returns the address for an origin\"},\"createMapping(string)\":{\"notice\":\"Creates a new mapping entry for an origin to an address\"},\"createMappingFor(string,address)\":{\"notice\":\"Creates a new mapping entry for an origin to an address if one does not exist, else returns the existing address\"},\"creatorOf(address)\":{\"notice\":\"Returns the creator for an address\"},\"isOriginMapped(string)\":{\"notice\":\"Returns whether an origin is mapped\"},\"originCreatorOf(string)\":{\"notice\":\"Returns the creator for an origin\"},\"originOf(address)\":{\"notice\":\"Returns the origin for an address\"},\"previewAddress(string)\":{\"notice\":\"Returns the deterministic address for an origin.\"},\"safeCreateMapping(string)\":{\"notice\":\"Creates a new mapping entry if one does not exist, else returns the existing address\"},\"safeCreateMappingFor(string,address)\":{\"notice\":\"Creates a new mapping entry for an origin to an address if one does not exist, else returns the existing address\"}},\"notice\":\"Immutable mapping of origins to onchain addresses\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/v2/ImmutableMapping.sol\":\"ImmutableMapping\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"contracts/v2/ImmutableMapping.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity ^0.8.22;\\n\\n/// @title Immutable Mapping\\n/// @author immutable-ratings, GM, EB, MB\\n/// @notice Immutable mapping of origins to onchain addresses\\ncontract ImmutableMapping {\\n    /// @dev Seed for address mapping derivation\\n    string public constant SEED = \\\"Immutable_Ratings_by_GM_EB_MB\\\";\\n\\n    /// @dev Internal mapping of address to origin\\n    mapping(address _address => string _origin) public _addressToOrigin;\\n\\n    /// @dev Internal mapping of origin to address\\n    mapping(string _origin => address _address) public _originToAddress;\\n\\n    /// @dev Internal mapping of address to creator\\n    mapping(address _address => address _creator) public _addressToCreator;\\n\\n    // Events\\n    event OriginMapped(address indexed _address, string indexed _origin, address indexed _creator);\\n\\n    // Errors\\n    error AlreadyMapped(string _origin);\\n    error EmptyOrigin();\\n    error AddressNotMapped(address _address);\\n    error OriginNotMapped(string _origin);\\n    error ZeroAddress();\\n\\n    /// @notice Creates a new mapping entry for an origin to an address\\n    /// @param origin The origin string\\n    /// @return _address The address of the mapping\\n    function createMapping(string calldata origin) external returns (address _address) {\\n        if (_originToAddress[origin] != address(0)) revert AlreadyMapped(origin);\\n        _address = _createMapping(origin, msg.sender);\\n    }\\n\\n    /// @notice Creates a new mapping entry if one does not exist, else returns the existing address\\n    /// @param origin The origin string\\n    /// @return _address The address of the mapping\\n    function safeCreateMapping(string calldata origin) external returns (address _address) {\\n        _address = _originToAddress[origin];\\n        if (_address == address(0)) {\\n            _address = _createMapping(origin, msg.sender);\\n        }\\n    }\\n\\n    /// @notice Creates a new mapping entry for an origin to an address if one does not exist,\\n    /// else returns the existing address\\n    /// @dev Allows setting the creator address to one other than the caller\\n    /// @param origin The origin string\\n    /// @param creator The creator address\\n    /// @return _address The address of the mapping\\n    function createMappingFor(string calldata origin, address creator) external returns (address _address) {\\n        if (creator == address(0)) revert ZeroAddress();\\n        if (_originToAddress[origin] != address(0)) revert AlreadyMapped(origin);\\n        _address = _createMapping(origin, creator);\\n    }\\n\\n    /// @notice Creates a new mapping entry for an origin to an address if one does not exist,\\n    /// else returns the existing address\\n    /// @dev Allows setting the creator address to one other than the caller\\n    /// @param origin The origin string\\n    /// @param creator The creator address\\n    /// @return _address The address of the mapping\\n    function safeCreateMappingFor(string calldata origin, address creator) external returns (address _address) {\\n        if (creator == address(0)) revert ZeroAddress();\\n        _address = _originToAddress[origin];\\n        if (_address == address(0)) {\\n            _address = _createMapping(origin, creator);\\n        }\\n    }\\n\\n    /// @notice Creates a new mapping entry for an origin to an address\\n    /// @param origin The origin string\\n    function _createMapping(string calldata origin, address creator) internal returns (address _address) {\\n        _address = _createDeterministicAddress(origin);\\n        _addressToOrigin[_address] = origin;\\n        _originToAddress[origin] = _address;\\n        _addressToCreator[_address] = creator;\\n\\n        emit OriginMapped(_address, origin, creator);\\n    }\\n\\n    /// @notice Creates a deterministic address for an origin.\\n    /// @dev Requires the origin to be non-empty.\\n    /// @param origin The origin string\\n    /// @return address The deterministic address\\n    function _createDeterministicAddress(string calldata origin) internal pure returns (address) {\\n        if (bytes(origin).length == 0) revert EmptyOrigin();\\n\\n        return address(uint160(uint256(keccak256(abi.encodePacked(SEED, origin)))));\\n    }\\n\\n    /// @notice Returns the deterministic address for an origin.\\n    /// @dev Does not require the origin to be mapped.\\n    /// @param origin The origin string\\n    /// @return _address The deterministic address\\n    function previewAddress(string calldata origin) external pure returns (address _address) {\\n        _address = _createDeterministicAddress(origin);\\n    }\\n\\n    /// @notice Returns whether an origin is mapped\\n    /// @param origin The origin string\\n    /// @return isMapped Whether the origin is mapped\\n    function isOriginMapped(string calldata origin) external view returns (bool isMapped) {\\n        isMapped = _originToAddress[origin] != address(0);\\n    }\\n\\n    /// @notice Returns the address for an origin\\n    /// @param origin The origin string\\n    /// @return _address The address\\n    function addressOf(string calldata origin) external view returns (address _address) {\\n        _address = _originToAddress[origin];\\n        if (_address == address(0)) revert OriginNotMapped(origin);\\n    }\\n\\n    /// @notice Returns the origin for an address\\n    /// @param _address The address\\n    /// @return origin The origin string\\n    function originOf(address _address) external view returns (string memory origin) {\\n        origin = _addressToOrigin[_address];\\n        if (bytes(origin).length == 0) revert AddressNotMapped(_address);\\n    }\\n\\n    /// @notice Returns the creator for an address\\n    /// @param _address The address\\n    /// @return creator The creator address\\n    function creatorOf(address _address) external view returns (address creator) {\\n        creator = _addressToCreator[_address];\\n        if (creator == address(0)) revert AddressNotMapped(_address);\\n    }\\n\\n    /// @notice Returns the creator for an origin\\n    /// @param origin The origin string\\n    /// @return creator The creator address\\n    function originCreatorOf(string calldata origin) external view returns (address creator) {\\n        address _address = _originToAddress[origin];\\n        if (_address == address(0)) revert OriginNotMapped(origin);\\n        creator = _addressToCreator[_address];\\n    }\\n}\\n\",\"keccak256\":\"0xa5fd38c1244a66951504b4a9ea272435335f0cd5583de5818e791e628c30b34a\",\"license\":\"UNLICENSED\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50610c81806100206000396000f3fe608060405234801561001057600080fd5b50600436106100ea5760003560e01c80639b566faf1161008c578063b7ae304111610066578063b7ae304114610231578063ccf1454a14610244578063dea5c2e014610257578063decbe3f91461026a57600080fd5b80639b566faf146101f8578063a6c519cb1461020b578063b7022eeb1461021e57600080fd5b8063334a6dc6116100c8578063334a6dc61461018b578063732602bb146101bf5780637b72a289146101d25780638e94ec65146101e557600080fd5b806306930cb4146100ef5780630edc473714610117578063217cf7e414610160575b600080fd5b6101026100fd3660046108db565b610293565b60405190151581526020015b60405180910390f35b6101536040518060400160405280601d81526020017f496d6d757461626c655f526174696e67735f62795f474d5f45425f4d4200000081525081565b60405161010e9190610941565b61017361016e3660046108db565b6102d3565b6040516001600160a01b03909116815260200161010e565b61017361019936600461098a565b80516020818301810180516001825292820191909301209152546001600160a01b031681565b6101536101cd366004610a52565b610347565b6101736101e03660046108db565b6103e1565b6101736101f3366004610a6d565b610426565b6101736102063660046108db565b610494565b610153610219366004610a52565b610508565b61017361022c3660046108db565b6105e1565b61017361023f366004610a6d565b6105ed565b6101736102523660046108db565b610679565b610173610265366004610a52565b6106ca565b610173610278366004610a52565b6002602052600090815260409020546001600160a01b031681565b6000806001600160a01b0316600184846040516102b1929190610ac1565b908152604051908190036020019020546001600160a01b031614159392505050565b6000806001600160a01b0316600184846040516102f1929190610ac1565b908152604051908190036020019020546001600160a01b0316146103355782826040516325224b2b60e11b815260040161032c929190610ad1565b60405180910390fd5b61034083833361070e565b9392505050565b6000602081905290815260409020805461036090610b00565b80601f016020809104026020016040519081016040528092919081815260200182805461038c90610b00565b80156103d95780601f106103ae576101008083540402835291602001916103d9565b820191906000526020600020905b8154815290600101906020018083116103bc57829003601f168201915b505050505081565b6000600183836040516103f5929190610ac1565b908152604051908190036020019020546001600160a01b03169050806104205761034083833361070e565b92915050565b60006001600160a01b03821661044f5760405163d92e233d60e01b815260040160405180910390fd5b60018484604051610461929190610ac1565b908152604051908190036020019020546001600160a01b03169050806103405761048c84848461070e565b949350505050565b600080600184846040516104a9929190610ac1565b908152604051908190036020019020546001600160a01b03169050806104e657838360405163c4e93f0560e01b815260040161032c929190610ad1565b6001600160a01b03908116600090815260026020526040902054169392505050565b6001600160a01b038116600090815260208190526040902080546060919061052f90610b00565b80601f016020809104026020016040519081016040528092919081815260200182805461055b90610b00565b80156105a85780601f1061057d576101008083540402835291602001916105a8565b820191906000526020600020905b81548152906001019060200180831161058b57829003601f168201915b5050505050905080516000036105dc57604051632294d5eb60e01b81526001600160a01b038316600482015260240161032c565b919050565b60006103408383610807565b60006001600160a01b0382166106165760405163d92e233d60e01b815260040160405180910390fd5b60006001600160a01b031660018585604051610633929190610ac1565b908152604051908190036020019020546001600160a01b03161461066e5783836040516325224b2b60e11b815260040161032c929190610ad1565b61048c84848461070e565b60006001838360405161068d929190610ac1565b908152604051908190036020019020546001600160a01b031690508061042057828260405163c4e93f0560e01b815260040161032c929190610ad1565b6001600160a01b0380821660009081526002602052604090205416806105dc57604051632294d5eb60e01b81526001600160a01b038316600482015260240161032c565b600061071a8484610807565b6001600160a01b0381166000908152602081905260409020909150610740848683610b8b565b508060018585604051610754929190610ac1565b90815260408051918290036020908101832080546001600160a01b039586167fffffffffffffffffffffffff00000000000000000000000000000000000000009182161790915585851660009081526002909252919020805493861693909116831790556107c59086908690610ac1565b604051908190038120906001600160a01b038416907fa8dcd1622398f6bd02562add88113930eb87d3d8f7c7db37cc0b59d36cc777e190600090a49392505050565b6000818103610829576040516319cb0b0d60e11b815260040160405180910390fd5b6040518060400160405280601d81526020017f496d6d757461626c655f526174696e67735f62795f474d5f45425f4d42000000815250838360405160200161087393929190610c4c565b60408051601f1981840301815291905280516020909101209392505050565b60008083601f8401126108a457600080fd5b50813567ffffffffffffffff8111156108bc57600080fd5b6020830191508360208285010111156108d457600080fd5b9250929050565b600080602083850312156108ee57600080fd5b823567ffffffffffffffff81111561090557600080fd5b61091185828601610892565b90969095509350505050565b60005b83811015610938578181015183820152602001610920565b50506000910152565b602081526000825180602084015261096081604085016020870161091d565b601f01601f19169190910160400192915050565b634e487b7160e01b600052604160045260246000fd5b60006020828403121561099c57600080fd5b813567ffffffffffffffff808211156109b457600080fd5b818401915084601f8301126109c857600080fd5b8135818111156109da576109da610974565b604051601f8201601f19908116603f01168101908382118183101715610a0257610a02610974565b81604052828152876020848701011115610a1b57600080fd5b826020860160208301376000928101602001929092525095945050505050565b80356001600160a01b03811681146105dc57600080fd5b600060208284031215610a6457600080fd5b61034082610a3b565b600080600060408486031215610a8257600080fd5b833567ffffffffffffffff811115610a9957600080fd5b610aa586828701610892565b9094509250610ab8905060208501610a3b565b90509250925092565b8183823760009101908152919050565b60208152816020820152818360408301376000818301604090810191909152601f909201601f19160101919050565b600181811c90821680610b1457607f821691505b602082108103610b3457634e487b7160e01b600052602260045260246000fd5b50919050565b601f821115610b86576000816000526020600020601f850160051c81016020861015610b635750805b601f850160051c820191505b81811015610b8257828155600101610b6f565b5050505b505050565b67ffffffffffffffff831115610ba357610ba3610974565b610bb783610bb18354610b00565b83610b3a565b6000601f841160018114610beb5760008515610bd35750838201355b600019600387901b1c1916600186901b178355610c45565b600083815260209020601f19861690835b82811015610c1c5786850135825560209485019460019092019101610bfc565b5086821015610c395760001960f88860031b161c19848701351681555b505060018560011b0183555b5050505050565b60008451610c5e81846020890161091d565b820183858237600093019283525090939250505056fea164736f6c6343000816000a",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100ea5760003560e01c80639b566faf1161008c578063b7ae304111610066578063b7ae304114610231578063ccf1454a14610244578063dea5c2e014610257578063decbe3f91461026a57600080fd5b80639b566faf146101f8578063a6c519cb1461020b578063b7022eeb1461021e57600080fd5b8063334a6dc6116100c8578063334a6dc61461018b578063732602bb146101bf5780637b72a289146101d25780638e94ec65146101e557600080fd5b806306930cb4146100ef5780630edc473714610117578063217cf7e414610160575b600080fd5b6101026100fd3660046108db565b610293565b60405190151581526020015b60405180910390f35b6101536040518060400160405280601d81526020017f496d6d757461626c655f526174696e67735f62795f474d5f45425f4d4200000081525081565b60405161010e9190610941565b61017361016e3660046108db565b6102d3565b6040516001600160a01b03909116815260200161010e565b61017361019936600461098a565b80516020818301810180516001825292820191909301209152546001600160a01b031681565b6101536101cd366004610a52565b610347565b6101736101e03660046108db565b6103e1565b6101736101f3366004610a6d565b610426565b6101736102063660046108db565b610494565b610153610219366004610a52565b610508565b61017361022c3660046108db565b6105e1565b61017361023f366004610a6d565b6105ed565b6101736102523660046108db565b610679565b610173610265366004610a52565b6106ca565b610173610278366004610a52565b6002602052600090815260409020546001600160a01b031681565b6000806001600160a01b0316600184846040516102b1929190610ac1565b908152604051908190036020019020546001600160a01b031614159392505050565b6000806001600160a01b0316600184846040516102f1929190610ac1565b908152604051908190036020019020546001600160a01b0316146103355782826040516325224b2b60e11b815260040161032c929190610ad1565b60405180910390fd5b61034083833361070e565b9392505050565b6000602081905290815260409020805461036090610b00565b80601f016020809104026020016040519081016040528092919081815260200182805461038c90610b00565b80156103d95780601f106103ae576101008083540402835291602001916103d9565b820191906000526020600020905b8154815290600101906020018083116103bc57829003601f168201915b505050505081565b6000600183836040516103f5929190610ac1565b908152604051908190036020019020546001600160a01b03169050806104205761034083833361070e565b92915050565b60006001600160a01b03821661044f5760405163d92e233d60e01b815260040160405180910390fd5b60018484604051610461929190610ac1565b908152604051908190036020019020546001600160a01b03169050806103405761048c84848461070e565b949350505050565b600080600184846040516104a9929190610ac1565b908152604051908190036020019020546001600160a01b03169050806104e657838360405163c4e93f0560e01b815260040161032c929190610ad1565b6001600160a01b03908116600090815260026020526040902054169392505050565b6001600160a01b038116600090815260208190526040902080546060919061052f90610b00565b80601f016020809104026020016040519081016040528092919081815260200182805461055b90610b00565b80156105a85780601f1061057d576101008083540402835291602001916105a8565b820191906000526020600020905b81548152906001019060200180831161058b57829003601f168201915b5050505050905080516000036105dc57604051632294d5eb60e01b81526001600160a01b038316600482015260240161032c565b919050565b60006103408383610807565b60006001600160a01b0382166106165760405163d92e233d60e01b815260040160405180910390fd5b60006001600160a01b031660018585604051610633929190610ac1565b908152604051908190036020019020546001600160a01b03161461066e5783836040516325224b2b60e11b815260040161032c929190610ad1565b61048c84848461070e565b60006001838360405161068d929190610ac1565b908152604051908190036020019020546001600160a01b031690508061042057828260405163c4e93f0560e01b815260040161032c929190610ad1565b6001600160a01b0380821660009081526002602052604090205416806105dc57604051632294d5eb60e01b81526001600160a01b038316600482015260240161032c565b600061071a8484610807565b6001600160a01b0381166000908152602081905260409020909150610740848683610b8b565b508060018585604051610754929190610ac1565b90815260408051918290036020908101832080546001600160a01b039586167fffffffffffffffffffffffff00000000000000000000000000000000000000009182161790915585851660009081526002909252919020805493861693909116831790556107c59086908690610ac1565b604051908190038120906001600160a01b038416907fa8dcd1622398f6bd02562add88113930eb87d3d8f7c7db37cc0b59d36cc777e190600090a49392505050565b6000818103610829576040516319cb0b0d60e11b815260040160405180910390fd5b6040518060400160405280601d81526020017f496d6d757461626c655f526174696e67735f62795f474d5f45425f4d42000000815250838360405160200161087393929190610c4c565b60408051601f1981840301815291905280516020909101209392505050565b60008083601f8401126108a457600080fd5b50813567ffffffffffffffff8111156108bc57600080fd5b6020830191508360208285010111156108d457600080fd5b9250929050565b600080602083850312156108ee57600080fd5b823567ffffffffffffffff81111561090557600080fd5b61091185828601610892565b90969095509350505050565b60005b83811015610938578181015183820152602001610920565b50506000910152565b602081526000825180602084015261096081604085016020870161091d565b601f01601f19169190910160400192915050565b634e487b7160e01b600052604160045260246000fd5b60006020828403121561099c57600080fd5b813567ffffffffffffffff808211156109b457600080fd5b818401915084601f8301126109c857600080fd5b8135818111156109da576109da610974565b604051601f8201601f19908116603f01168101908382118183101715610a0257610a02610974565b81604052828152876020848701011115610a1b57600080fd5b826020860160208301376000928101602001929092525095945050505050565b80356001600160a01b03811681146105dc57600080fd5b600060208284031215610a6457600080fd5b61034082610a3b565b600080600060408486031215610a8257600080fd5b833567ffffffffffffffff811115610a9957600080fd5b610aa586828701610892565b9094509250610ab8905060208501610a3b565b90509250925092565b8183823760009101908152919050565b60208152816020820152818360408301376000818301604090810191909152601f909201601f19160101919050565b600181811c90821680610b1457607f821691505b602082108103610b3457634e487b7160e01b600052602260045260246000fd5b50919050565b601f821115610b86576000816000526020600020601f850160051c81016020861015610b635750805b601f850160051c820191505b81811015610b8257828155600101610b6f565b5050505b505050565b67ffffffffffffffff831115610ba357610ba3610974565b610bb783610bb18354610b00565b83610b3a565b6000601f841160018114610beb5760008515610bd35750838201355b600019600387901b1c1916600186901b178355610c45565b600083815260209020601f19861690835b82811015610c1c5786850135825560209485019460019092019101610bfc565b5086821015610c395760001960f88860031b161c19848701351681555b505060018560011b0183555b5050505050565b60008451610c5e81846020890161091d565b820183858237600093019283525090939250505056fea164736f6c6343000816000a",
+  "devdoc": {
+    "author": "immutable-ratings, GM, EB, MB",
+    "kind": "dev",
+    "methods": {
+      "addressOf(string)": {
+        "params": {
+          "origin": "The origin string"
+        },
+        "returns": {
+          "_address": "The address"
+        }
+      },
+      "createMapping(string)": {
+        "params": {
+          "origin": "The origin string"
+        },
+        "returns": {
+          "_address": "The address of the mapping"
+        }
+      },
+      "createMappingFor(string,address)": {
+        "details": "Allows setting the creator address to one other than the caller",
+        "params": {
+          "creator": "The creator address",
+          "origin": "The origin string"
+        },
+        "returns": {
+          "_address": "The address of the mapping"
+        }
+      },
+      "creatorOf(address)": {
+        "params": {
+          "_address": "The address"
+        },
+        "returns": {
+          "creator": "The creator address"
+        }
+      },
+      "isOriginMapped(string)": {
+        "params": {
+          "origin": "The origin string"
+        },
+        "returns": {
+          "isMapped": "Whether the origin is mapped"
+        }
+      },
+      "originCreatorOf(string)": {
+        "params": {
+          "origin": "The origin string"
+        },
+        "returns": {
+          "creator": "The creator address"
+        }
+      },
+      "originOf(address)": {
+        "params": {
+          "_address": "The address"
+        },
+        "returns": {
+          "origin": "The origin string"
+        }
+      },
+      "previewAddress(string)": {
+        "details": "Does not require the origin to be mapped.",
+        "params": {
+          "origin": "The origin string"
+        },
+        "returns": {
+          "_address": "The deterministic address"
+        }
+      },
+      "safeCreateMapping(string)": {
+        "params": {
+          "origin": "The origin string"
+        },
+        "returns": {
+          "_address": "The address of the mapping"
+        }
+      },
+      "safeCreateMappingFor(string,address)": {
+        "details": "Allows setting the creator address to one other than the caller",
+        "params": {
+          "creator": "The creator address",
+          "origin": "The origin string"
+        },
+        "returns": {
+          "_address": "The address of the mapping"
+        }
+      }
+    },
+    "stateVariables": {
+      "SEED": {
+        "details": "Seed for address mapping derivation"
+      },
+      "_addressToCreator": {
+        "details": "Internal mapping of address to creator"
+      },
+      "_addressToOrigin": {
+        "details": "Internal mapping of address to origin"
+      },
+      "_originToAddress": {
+        "details": "Internal mapping of origin to address"
+      }
+    },
+    "title": "Immutable Mapping",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "addressOf(string)": {
+        "notice": "Returns the address for an origin"
+      },
+      "createMapping(string)": {
+        "notice": "Creates a new mapping entry for an origin to an address"
+      },
+      "createMappingFor(string,address)": {
+        "notice": "Creates a new mapping entry for an origin to an address if one does not exist, else returns the existing address"
+      },
+      "creatorOf(address)": {
+        "notice": "Returns the creator for an address"
+      },
+      "isOriginMapped(string)": {
+        "notice": "Returns whether an origin is mapped"
+      },
+      "originCreatorOf(string)": {
+        "notice": "Returns the creator for an origin"
+      },
+      "originOf(address)": {
+        "notice": "Returns the origin for an address"
+      },
+      "previewAddress(string)": {
+        "notice": "Returns the deterministic address for an origin."
+      },
+      "safeCreateMapping(string)": {
+        "notice": "Creates a new mapping entry if one does not exist, else returns the existing address"
+      },
+      "safeCreateMappingFor(string,address)": {
+        "notice": "Creates a new mapping entry for an origin to an address if one does not exist, else returns the existing address"
+      }
+    },
+    "notice": "Immutable mapping of origins to onchain addresses",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 10419,
+        "contract": "contracts/v2/ImmutableMapping.sol:ImmutableMapping",
+        "label": "_addressToOrigin",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_mapping(t_address,t_string_storage)"
+      },
+      {
+        "astId": 10424,
+        "contract": "contracts/v2/ImmutableMapping.sol:ImmutableMapping",
+        "label": "_originToAddress",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_string_memory_ptr,t_address)"
+      },
+      {
+        "astId": 10429,
+        "contract": "contracts/v2/ImmutableMapping.sol:ImmutableMapping",
+        "label": "_addressToCreator",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_address,t_address)"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_mapping(t_address,t_address)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_mapping(t_address,t_string_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => string)",
+        "numberOfBytes": "32",
+        "value": "t_string_storage"
+      },
+      "t_mapping(t_string_memory_ptr,t_address)": {
+        "encoding": "mapping",
+        "key": "t_string_memory_ptr",
+        "label": "mapping(string => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_string_memory_ptr": {
+        "encoding": "bytes",
+        "label": "string",
+        "numberOfBytes": "32"
+      },
+      "t_string_storage": {
+        "encoding": "bytes",
+        "label": "string",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

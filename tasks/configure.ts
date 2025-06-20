@@ -2,6 +2,7 @@ import { task } from "hardhat/config";
 
 task("configure", "Configure the contracts").setAction(async (_, hre) => {
   const { deployments, ethers } = hre;
+  const [deployer] = await ethers.getSigners();
 
   const tup = await deployments.get("TUP");
   const tdn = await deployments.get("TDN");
@@ -18,4 +19,12 @@ task("configure", "Configure the contracts").setAction(async (_, hre) => {
   await TDN.grantRole(MINTER_ROLE, immutableRatings.address);
 
   console.log("Configured ImmutableRatings as MINTER_ROLE");
+
+  console.log("Setting OPERATOR_ROLE");
+
+  const contract = await ethers.getContractAt("ImmutableRatings", immutableRatings.address);
+  const OPERATOR_ROLE = await contract.OPERATOR_ROLE();
+  await contract.grantRole(OPERATOR_ROLE, deployer.address);
+
+  console.log("Configured ImmutableRatings as OPERATOR_ROLE");
 });
