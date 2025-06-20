@@ -10,13 +10,14 @@ import "solidity-docgen";
 
 import "./tasks/accounts";
 import "./tasks/configure";
+import "./tasks/set-receiver";
 import "./tasks/verify";
 
 dotenv.config();
 
 // Run 'npx hardhat vars setup' to see the list of variables that need to be set
 
-const privateKey = process.env.PRIVATE_KEY ?? Wallet.createRandom().privateKey;
+const privateKey = process.env.PRIVATE_KEY!;
 if (!privateKey) throw new Error("PRIVATE_KEY is not set");
 const accounts = [privateKey];
 
@@ -30,8 +31,8 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      base: "P6Y7IMJGJK43EMAQPZK1158NFM15KYUXXS",
-      baseSepolia: "P6Y7IMJGJK43EMAQPZK1158NFM15KYUXXS",
+      base: vars.get("BASESCAN_API_KEY", ""),
+      baseSepolia: vars.get("BASESCAN_API_KEY", ""),
       arbitrumOne: vars.get("ARBISCAN_API_KEY", ""),
       avalanche: vars.get("SNOWTRACE_API_KEY", ""),
       bsc: vars.get("BSCSCAN_API_KEY", ""),
@@ -48,8 +49,7 @@ const config: HardhatUserConfig = {
     coinmarketcap: process.env.COINMARKETCAP_API_KEY || "",
     // L1: "ethereum",
     L2: "base",
-    L1Etherscan: "TSUMBVQKM4V7IYIV1JW4RRETR4QIMNRWZK",
-    // L2Etherscan: "P6Y7IMJGJK43EMAQPZK1158NFM15KYUXXS",
+    L1Etherscan: process.env.ETHERSCAN_API_KEY ?? "",
   },
   networks: {
     hardhat: {
@@ -78,6 +78,11 @@ const config: HardhatUserConfig = {
       url: "https://eth-sepolia.public.blastapi.io",
       accounts,
       chainId: 11155111,
+    },
+    arbitrum: {
+      url: "https://arbitrum-one-rpc.publicnode.com",
+      accounts,
+      chainId: 42161,
     },
   },
   paths: {

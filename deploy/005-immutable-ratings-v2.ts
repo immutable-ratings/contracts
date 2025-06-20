@@ -22,14 +22,14 @@ const deploy: DeployFunction = async (hre) => {
 
   const tup = await deployments.get("TUP");
   const tdn = await deployments.get("TDN");
-  const immutableMapping = await deployments.get("ImmutableMapping");
+  const mapping = await deployments.get("UniversalMappingProtocol");
 
   const contractFactory = await hre.ethers.getContractFactory(contractName);
-  console.log([tup.address, tdn.address, immutableMapping.address, receiver, swapRouter, paymentToken, ratingPrice]);
+  console.log([tup.address, tdn.address, mapping.address, receiver, swapRouter, paymentToken, ratingPrice]);
 
   const contract = await upgrades.deployProxy(
     contractFactory,
-    [tup.address, tdn.address, immutableMapping.address, receiver, swapRouter, paymentToken, ratingPrice],
+    [tup.address, tdn.address, mapping.address, receiver, swapRouter, paymentToken, ratingPrice],
     {
       verifySourceCode: true,
     },
